@@ -1,0 +1,32 @@
+{
+  "note": "Imagens de referência ilustrativas. Confirme que representam o produto, material e acabamento vendidos antes de publicar a loja.",
+  "images": [
+    {
+      "file": "product-01-main.webp",
+      "productId": 1,
+      "author": "Ruan Richard Rodrigues",
+      "source": "https://unsplash.com/photos/white-window-blinds-on-window-Bij3VCHV9e8",
+      "license": "Unsplash License",
+      "licenseUrl": "https://unsplash.com/license",
+      "description": "Persiana veneziana horizontal branca"
+    },
+    {
+      "file": "product-03-main.webp",
+      "productId": 3,
+      "author": "Sarguninder Singh",
+      "source": "https://unsplash.com/photos/vertical-blinds-partially-covering-a-window-with-light-filtering-through-ui5N4nnc568",
+      "license": "Unsplash License",
+      "licenseUrl": "https://unsplash.com/license",
+      "description": "Persiana vertical branca com luz filtrada"
+    },
+    {
+      "file": "product-11-main.webp",
+      "productId": 11,
+      "author": "Диана Дунаева",
+      "source": "https://www.pexels.com/photo/low-angle-shot-of-window-ceiling-10096727/",
+      "license": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "description": "Claraboia com persiana interna"
+    }
+  ]
+}

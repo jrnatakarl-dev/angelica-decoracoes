@@ -1,0 +1,424 @@
+{
+  "categories": [
+    {
+      "id": "horizontal",
+      "name": "Horizontal",
+      "note": "Lâminas que desenham a luz",
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=82"
+    },
+    {
+      "id": "vertical",
+      "name": "Vertical",
+      "note": "Tecido em queda",
+      "image": "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=82"
+    },
+    {
+      "id": "rolo",
+      "name": "Rolô",
+      "note": "Blackout, solar e translúcida",
+      "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=82"
+    },
+    {
+      "id": "romana",
+      "name": "Romana",
+      "note": "Dobras e aconchego",
+      "image": "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=800&q=82"
+    },
+    {
+      "id": "double",
+      "name": "Double vision",
+      "note": "Privacidade em faixas",
+      "image": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=82"
+    },
+    {
+      "id": "painel",
+      "name": "Painel",
+      "note": "Vãos largos e portas",
+      "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=800&q=82"
+    },
+    {
+      "id": "teto",
+      "name": "Teto",
+      "note": "Claraboias e sótãos",
+      "image": "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=800&q=82"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Persiana Horizontal de Alumínio",
+      "kind": "Horizontal · 25 mm",
+      "category": "horizontal",
+      "light": "ajustavel",
+      "price": 189,
+      "stock": 28,
+      "lead": "7 dias úteis",
+      "tag": "Mais escolhida",
+      "image": "assets/images/products/product-01-main.webp",
+      "gallery": [
+        "assets/images/products/product-01-main.webp"
+      ],
+      "description": "Lâminas de alumínio de 25 mm, leves e fáceis de limpar. Incline a luz ao longo do dia sem perder a vista da rua.",
+      "colors": [
+        {
+          "name": "Branco",
+          "hex": "#efeee8"
+        },
+        {
+          "name": "Areia",
+          "hex": "#c9b99e"
+        },
+        {
+          "name": "Preto",
+          "hex": "#383a38"
+        },
+        {
+          "name": "Prata",
+          "hex": "#b7b7b2"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Persiana Horizontal de Madeira Sintética",
+      "kind": "Horizontal · PVC madeira",
+      "category": "horizontal",
+      "light": "ajustavel",
+      "price": 349,
+      "stock": 14,
+      "lead": "10 dias úteis",
+      "tag": "Acabamento especial",
+      "image": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1615874959474-d609969a20d7?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Visual de madeira com resistência à umidade. Ideal para salas e varandas gourmet cobertas.",
+      "colors": [
+        {
+          "name": "Carvalho",
+          "hex": "#b88955"
+        },
+        {
+          "name": "Nogueira",
+          "hex": "#684b37"
+        },
+        {
+          "name": "Natural",
+          "hex": "#d3b892"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Persiana Vertical de Tecido",
+      "kind": "Vertical · tecido",
+      "category": "vertical",
+      "light": "translucida",
+      "price": 229,
+      "stock": 19,
+      "lead": "8 dias úteis",
+      "tag": "Portas de vidro",
+      "image": "assets/images/products/product-03-main.webp",
+      "gallery": [
+        "assets/images/products/product-03-main.webp"
+      ],
+      "description": "Faixas verticais que recolhem para o lado — o caminho clássico para portas de correr e vãos largos.",
+      "colors": [
+        {
+          "name": "Cru",
+          "hex": "#e6dfd1"
+        },
+        {
+          "name": "Cinza",
+          "hex": "#9a9b96"
+        },
+        {
+          "name": "Oliva",
+          "hex": "#6f7464"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Persiana Double Vision",
+      "kind": "Double vision · zebra",
+      "category": "double",
+      "light": "ajustavel",
+      "price": 269,
+      "stock": 22,
+      "lead": "8 dias úteis",
+      "tag": "Luz em camadas",
+      "image": "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1600047509807-ba8f99d2cd0a?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Faixas opacas e translúcidas que se alinham: privacidade ou paisagem, no mesmo tecido.",
+      "colors": [
+        {
+          "name": "Linho",
+          "hex": "#d5cbbd"
+        },
+        {
+          "name": "Cinza claro",
+          "hex": "#aaa9a3"
+        },
+        {
+          "name": "Carvão",
+          "hex": "#484946"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Persiana Painel Europeu",
+      "kind": "Painel · trilho",
+      "category": "painel",
+      "light": "translucida",
+      "price": 259,
+      "stock": 11,
+      "lead": "12 dias úteis",
+      "tag": "Vãos amplos",
+      "image": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Painéis que deslizam no trilho, como portas. Vista contemporânea para living e lofts.",
+      "colors": [
+        {
+          "name": "Off-white",
+          "hex": "#eeeae2"
+        },
+        {
+          "name": "Areia",
+          "hex": "#d3c6b3"
+        },
+        {
+          "name": "Grafite",
+          "hex": "#555552"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Persiana Rolô Blackout",
+      "kind": "Rolô · blackout",
+      "category": "rolo",
+      "light": "blackout",
+      "price": 249,
+      "stock": 31,
+      "lead": "6 dias úteis",
+      "tag": "Quarto & descanso",
+      "image": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1615876234886-fd9a39fda97f?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Tecido que bloqueia até 99% da luz. O clássico para quarto, home theater e plantão de sono.",
+      "colors": [
+        {
+          "name": "Off-white",
+          "hex": "#eeeae2"
+        },
+        {
+          "name": "Fendi",
+          "hex": "#b7aa9c"
+        },
+        {
+          "name": "Cinza",
+          "hex": "#787b79"
+        },
+        {
+          "name": "Azul noite",
+          "hex": "#425260"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Persiana Rolô Tela Solar",
+      "kind": "Rolô · tela solar",
+      "category": "rolo",
+      "light": "solar",
+      "price": 219,
+      "stock": 26,
+      "lead": "6 dias úteis",
+      "tag": "Proteção UV",
+      "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Tela que corta calor e UV e mantém a paisagem. Escritórios e fachadas oeste agradecem.",
+      "colors": [
+        {
+          "name": "Linho natural",
+          "hex": "#c9bca8"
+        },
+        {
+          "name": "Areia",
+          "hex": "#ded4c5"
+        },
+        {
+          "name": "Grafite",
+          "hex": "#555552"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Persiana Rolô Translúcida",
+      "kind": "Rolô · translúcida",
+      "category": "rolo",
+      "light": "translucida",
+      "price": 199,
+      "stock": 24,
+      "lead": "6 dias úteis",
+      "tag": "Luz suave",
+      "image": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1600607687644-c7171b42498f?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Difunde a luz, esconde a bagunça da rua e não apaga o ambiente. Dia inteiro com claridade agradável.",
+      "colors": [
+        {
+          "name": "Algodão",
+          "hex": "#ece9df"
+        },
+        {
+          "name": "Areia",
+          "hex": "#d3c6b3"
+        },
+        {
+          "name": "Névoa",
+          "hex": "#a6a8a5"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Persiana Romana Blackout",
+      "kind": "Romana · blackout",
+      "category": "romana",
+      "light": "blackout",
+      "price": 319,
+      "stock": 9,
+      "lead": "10 dias úteis",
+      "tag": "Privacidade total",
+      "image": "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Dobras horizontais com tecido encorpado. O blackout elegante para suítes e salas de TV.",
+      "colors": [
+        {
+          "name": "Creme",
+          "hex": "#e6dfd1"
+        },
+        {
+          "name": "Taupe",
+          "hex": "#9c8b7d"
+        },
+        {
+          "name": "Azul profundo",
+          "hex": "#425260"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Persiana Romana Translúcida",
+      "kind": "Romana · translúcida",
+      "category": "romana",
+      "light": "translucida",
+      "price": 289,
+      "stock": 13,
+      "lead": "10 dias úteis",
+      "tag": "Toque natural",
+      "image": "https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=1100&q=82",
+      "gallery": [
+        "https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1100&q=82",
+        "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=1100&q=82"
+      ],
+      "description": "Tecido filtrante em pregas romanas. Aconchego de cortina com a praticidade da persiana.",
+      "colors": [
+        {
+          "name": "Palha",
+          "hex": "#c8b89e"
+        },
+        {
+          "name": "Nuvem",
+          "hex": "#e7e4dc"
+        },
+        {
+          "name": "Oliva",
+          "hex": "#858776"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Persiana de Teto",
+      "kind": "Teto · claraboia",
+      "category": "teto",
+      "light": "ajustavel",
+      "price": 389,
+      "stock": 7,
+      "lead": "12 dias úteis",
+      "tag": "Claraboia",
+      "image": "assets/images/products/product-11-main.webp",
+      "gallery": [
+        "assets/images/products/product-11-main.webp"
+      ],
+      "description": "Sistema para claraboias e sótãos: reduz calor no verão e controla ofuscamento sem perder o céu.",
+      "colors": [
+        {
+          "name": "Branco gelo",
+          "hex": "#f3f1ea"
+        },
+        {
+          "name": "Cinza",
+          "hex": "#8a8c88"
+        },
+        {
+          "name": "Bege",
+          "hex": "#cbb99a"
+        }
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Como escolho as medidas?",
+      "a": "Meça largura e altura em três pontos e use a menor para instalação no vão. Fora do vão, some 5–10 cm de cada lado. O preço é área (m²) × valor do modelo."
+    },
+    {
+      "q": "Quais formas de pagamento?",
+      "a": "Os pedidos são registrados no site. O processamento de Pix, cartão e boleto ainda precisa ser integrado; não faça pagamentos por esta versão."
+    },
+    {
+      "q": "Qual o prazo?",
+      "a": "Os prazos de fabricação variam de 6 a 12 dias úteis conforme o modelo. O frete exibido é uma estimativa e precisa ser confirmado antes da venda."
+    },
+    {
+      "q": "Posso trocar?",
+      "a": "Sim, em 7 dias pelo CDC. Peças sob medida sem defeito podem ter custo de reprocessamento. Defeito: 12 meses de garantia."
+    },
+    {
+      "q": "Vocês instalam?",
+      "a": "As opções de instalação estão descritas na configuração do produto. Confirme disponibilidade e cobertura antes de publicar a loja."
+    }
+  ]
+}
