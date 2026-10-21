@@ -73,7 +73,7 @@ export default {
         <template v-for="c in categories" :key="c.id">
           <button @click="setCategory(c.id)" class="group text-left">
             <div class="relative aspect-[.78] overflow-hidden bg-sand">
-              <img :src="c.image" :alt="c.name" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
+              <img :src="c.image" :alt="c.name" @error="fallbackImage($event)" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
               <div class="absolute inset-0 bg-gradient-to-t from-ink/65 via-transparent to-transparent"></div>
               <div class="absolute bottom-4 left-4 text-white sm:bottom-6 sm:left-6">
                 <p class="font-serif text-xl sm:text-2xl" v-text="c.name"></p>
@@ -117,11 +117,14 @@ export default {
             <button @click="category=c.id;favoritesOnly=false" class="border px-3 py-2 text-[10px] font-bold uppercase tracking-wider" :class="category===c.id?'border-clay bg-clay text-white':'border-ink/15'" v-text="c.name"></button>
           </template>
         </div>
+        <p v-if="catalogStatus==='loading'" class="mb-6 border border-ink/10 bg-paper p-4 text-sm text-ink/65">Carregando produtos…</p>
+        <p v-else-if="catalogStatus==='fallback'" role="status" class="mb-6 border border-amber-700/25 bg-amber-50 p-4 text-sm text-amber-950">Exibindo o catálogo salvo neste site. Sacola, preços atualizados, pedidos e pagamentos dependem da conexão com o servidor da loja.</p>
+        <p v-else-if="catalogStatus==='error'" role="alert" class="mb-6 border border-red-700/25 bg-red-50 p-4 text-sm text-red-950">Não foi possível carregar os produtos. Atualize a página ou tente novamente mais tarde.</p>
         <div class="grid grid-cols-1 gap-x-5 gap-y-9 min-[520px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <template v-for="p in visibleProducts" :key="p.id">
             <article class="group">
               <div class="relative aspect-[.82] overflow-hidden bg-paper">
-                <img :src="p.image" :alt="p.name" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]">
+                <img :src="p.image" :alt="p.name" loading="lazy" @error="fallbackImage($event)" class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]">
                 <span v-if="p.image.startsWith('http')" class="absolute bottom-3 right-3 bg-paper/90 px-2 py-1 text-[8px] font-bold uppercase tracking-wider">Imagem ilustrativa</span>
                 <span v-show="p.tag" class="absolute left-3 top-3 bg-paper px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.15em]" v-text="p.tag"></span>
                 <span v-show="p.stock<=3" class="absolute left-3 bottom-3 bg-ink px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.15em] text-white">Últimas unidades</span>
