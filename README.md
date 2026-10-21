@@ -45,6 +45,17 @@ Checkout Pro usa a API oficial de preferências e redireciona o comprador para o
 
 Documentação oficial: [criar preferência](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/create-payment-preference), [webhooks e assinatura](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/payment-notifications).
 
+## Publicação no Vercel com backend Docker
+
+O Vercel hospeda o frontend Vite e encaminha `/api/*` para o backend Render declarado em `render.yaml`. O backend preserva o SQLite em um disco persistente montado em `/data`; o serviço fica em uma instância para manter o SQLite consistente. A URL do proxy está configurada como `https://angelica-casa-api.onrender.com`; se o Render atribuir outro endereço, atualize o destino em `vercel.json` antes de publicar o frontend.
+
+1. Conecte o repositório ao GitHub e importe-o no Vercel. O `vercel.json` configura `npm run build`, `dist` e o proxy de API.
+2. Crie o serviço pelo Blueprint `render.yaml`. Ele usa Docker, verifica `/api/health` e monta 1 GB persistente em `/data`. O disco persistente exige um serviço pago no Render; serviços grátis não preservam o disco entre reinícios e publicações. Confirme o preço no painel antes de provisionar. O disco limita o serviço a uma instância e desativa deploys sem interrupção. [Discos persistentes](https://render.com/docs/disks) · [Planos e preços](https://render.com/pricing).
+3. No ambiente do Render, configure `APP_PUBLIC_URL` com a URL de produção `https://<projeto>.vercel.app`. Adicione credenciais reais do Mercado Pago (`MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`) e do Melhor Envio (`ME_ACCESS_TOKEN`, `ME_USER_AGENT`, `ME_FROM_*`, `ME_PRODUCT_WEIGHT_KG`, `ME_PRODUCT_DEPTH_CM`). O webhook do Mercado Pago deve apontar para `https://<projeto>.vercel.app/api/payments/mercadopago/webhook`.
+4. Mantenha `ME_SANDBOX=1` durante a homologação. Sem credenciais reais, catálogo e saúde da API funcionam, mas pagamentos e cotações ficam indisponíveis.
+
+Vercel encaminha requisições para uma origem externa com rewrites, preservando a URL vista pelo comprador. [Documentação de rewrites do Vercel](https://vercel.com/docs/routing/rewrites).
+
 ## Imagens e catálogo
 
 O catálogo inicial contém dados de exemplo. O selo “Imagem ilustrativa” aparece nos cards e na personalização quando a foto vem de endereço externo. Ainda são necessárias fotos reais/autorizadas para apresentar com precisão cada modelo e acabamento. Substitua preços, estoque, cores, descrição e prazo antes de vender.

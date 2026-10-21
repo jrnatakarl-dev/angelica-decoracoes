@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: angelica-casa-api
+    runtime: docker
+    plan: 0.5c-512mb
+    region: ohio
+    branch: main
+    healthCheckPath: /api/health
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    numInstances: 1
+    disk:
+      name: store-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "10000"
+      - key: APP_DATA_DIR
+        value: /data
+      - key: APP_SECURE_COOKIE
+        value: "1"
+      - key: APP_TRUST_PROXY
+        value: "1"
+      - key: ME_SANDBOX
+        value: "1"
