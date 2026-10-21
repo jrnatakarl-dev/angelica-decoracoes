@@ -1,0 +1,45 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      APP_DATA_DIR: /data
+      APP_PUBLIC_URL: https://${SITE_DOMAIN:?Defina SITE_DOMAIN no arquivo .env}
+      APP_SECURE_COOKIE: "1"
+      APP_TRUST_PROXY: "1"
+    volumes:
+      - store-data:/data
+    expose:
+      - "8000"
+    networks:
+      - web
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Defina SITE_DOMAIN no arquivo .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - web
+
+networks:
+  web:
+
+volumes:
+  store-data:
+  caddy-data:
+  caddy-config:

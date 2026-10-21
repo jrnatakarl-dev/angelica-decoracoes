@@ -42,6 +42,14 @@ CREATE TABLE IF NOT EXISTS orders (
   email TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'Aguardando pagamento',
   payment_method TEXT NOT NULL,
+  payment_provider TEXT NOT NULL DEFAULT '',
+  payment_status TEXT NOT NULL DEFAULT 'pending',
+  payment_id TEXT NOT NULL DEFAULT '',
+  preference_id TEXT NOT NULL DEFAULT '',
+  checkout_url TEXT NOT NULL DEFAULT '',
+  shipping_id TEXT NOT NULL DEFAULT '',
+  shipping_stage TEXT NOT NULL DEFAULT '',
+  shipping_label_url TEXT NOT NULL DEFAULT '',
   subtotal_cents INTEGER NOT NULL,
   discount_cents INTEGER NOT NULL DEFAULT 0,
   shipping_cents INTEGER NOT NULL,
@@ -70,8 +78,10 @@ CREATE TABLE IF NOT EXISTS subscribers (
 
 
 def connect() -> sqlite3.Connection:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.umask(0o077)
     db = sqlite3.connect(DB_PATH, timeout=10, cached_statements=128)
+    os.chmod(DB_PATH, 0o600)
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA foreign_keys = ON")
     db.execute("PRAGMA busy_timeout = 10000")
@@ -100,6 +110,19 @@ def initialize() -> None:
         order_columns = {row["name"] for row in db.execute("PRAGMA table_info(orders)")}
         if "inventory_reserved" not in order_columns:
             db.execute("ALTER TABLE orders ADD COLUMN inventory_reserved INTEGER NOT NULL DEFAULT 0 CHECK (inventory_reserved IN (0, 1))")
+        payment_columns = {
+            "payment_provider": "TEXT NOT NULL DEFAULT ''",
+            "payment_status": "TEXT NOT NULL DEFAULT 'pending'",
+            "payment_id": "TEXT NOT NULL DEFAULT ''",
+            "preference_id": "TEXT NOT NULL DEFAULT ''",
+            "checkout_url": "TEXT NOT NULL DEFAULT ''",
+            "shipping_id": "TEXT NOT NULL DEFAULT ''",
+            "shipping_stage": "TEXT NOT NULL DEFAULT ''",
+            "shipping_label_url": "TEXT NOT NULL DEFAULT ''",
+        }
+        for column, definition in payment_columns.items():
+            if column not in order_columns:
+                db.execute(f"ALTER TABLE orders ADD COLUMN {column} {definition}")
         db.execute("DELETE FROM sessions WHERE expires_at <= ?", (datetime.now(timezone.utc).isoformat(),))
         catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         for product in catalog["products"]:

@@ -20,13 +20,13 @@ const store = reactive({
     categories:[], products:[], faqs:[],
 
     view:'home', category:'', favoritesOnly:false, query:'', sort:'featured', filterLight:'',
-    favorites:[], cart:[], compare:[], recent:[], orders:[], product:null,
+    favorites:[], cart:[], compare:[], recent:[], orders:[], contacts:[], subscribers:[], product:null,
     cartOpen:false, mobileOpen:false, searchOpen:false, faq:-1, toast:'',
     width:100, height:120, quantity:1, selectedColor:'', install:'vao', galleryIndex:0,
-    step:1, couponCode:'', coupon:null, couponMsg:'', shipping:'pac',
-    payMethod:'pix', cepStatus:'', pdpCep:'', pdpFreight:'', lastOrder:null,
+    step:1, shipping:'retirada', submittingOrder:false, quotingShipping:false, shippingQuotes:[], shippingQuoteError:'',
+    paymentReturn:'', cepStatus:'', pdpCep:'', pdpFreight:'', lastOrder:null,
     user:null, adminOk:false, adminPass:'', trackQuery:'', tracked:null, newsEmail:'',
-    customer:{name:'',email:'',phone:'',cep:'',street:'',number:'',complement:'',neighborhood:'',city:'',uf:'',note:'',terms:false},
+    customer:{name:'',email:'',phone:'',cpf:'',cep:'',street:'',number:'',complement:'',neighborhood:'',city:'',uf:'',note:'',terms:false},
     auth:{name:'',email:'',password:''}, contact:{name:'',email:'',interest:'Dúvida sobre produto',message:''},
     card:{name:'',installments:1},
 
@@ -43,25 +43,20 @@ const store = reactive({
     get areaM2(){return Math.max(0.4,(Number(this.width)||0)*(Number(this.height)||0)/10000)},
     get configPrice(){if(!this.product)return 0;return this.product.price*this.areaM2*this.quantity},
     get galleryImage(){return (this.product?.gallery||[this.product?.image])[this.galleryIndex]||this.product?.image},
-    get discount(){
-      let d=0;
-      if(this.coupon?.type==='pct')d+=this.subtotal*(this.coupon.value/100);
-      if(this.payMethod==='pix')d+= (this.subtotal-d)*0.05;
-      return d;
-    },
+    get discount(){return 0},
     get shippingPrice(){
-      if(this.coupon?.type==='frete')return 0;
       const s=this.shippingOptions.find(x=>x.id===this.shipping);
       return s?s.price:0;
     },
     get grandTotal(){return Math.max(0,this.subtotal-this.discount+this.shippingPrice)},
     get shippingOptions(){
-      const area=this.cart.reduce((n,i)=>n+(i.width*i.height/10000)*i.qty,0);
-      const base=Math.min(189,39+area*18);
       return [
-        {id:'retirada',name:'Retirada no ateliê',eta:'São Paulo · 0 dia de frete',price:0},
-        {id:'pac',name:'PAC',eta:'5 a 12 dias úteis após fabricação',price:Math.round(base)},
-        {id:'sedex',name:'SEDEX',eta:'2 a 5 dias úteis após fabricação',price:Math.round(base*1.65)}
+        {id:'retirada',name:'Retirada no ateliê',eta:'Combine o horário após a compra',price:0},
+        ...this.shippingQuotes.map(quote=>({
+          id:quote.id,name:`${quote.company} · ${quote.name}`,
+          eta:quote.deliveryDays?`${quote.deliveryDays} dias úteis após fabricação`:'Prazo informado pela transportadora',
+          price:quote.price,
+        })),
       ];
     },
 
@@ -114,6 +109,17 @@ const store = reactive({
       }
 
       this.readHash();
+      const params = new URLSearchParams(window.location.search);
+      this.paymentReturn = params.get('payment_return') || '';
+      const orderNumber = params.get('external_reference') || '';
+      if (this.paymentReturn && /^AC-[A-F0-9]{12}$/.test(orderNumber)) {
+        this.view = 'sucesso';
+        try {
+          this.lastOrder = await this.api('/api/orders/track/' + encodeURIComponent(orderNumber));
+        } catch (error) {
+          this.notify('Não foi possível consultar o status do pedido. Guarde o número ' + orderNumber);
+        }
+      }
     },
 
     async api(path, options={}){
@@ -124,7 +130,18 @@ const store = reactive({
     },
 
     async loadOrders(){
-      const {orders}=await this.api(this.user?.role==='admin'?'/api/admin/orders':'/api/orders');
+      if (this.user?.role==='admin') {
+        const [orderData, contactData, subscriberData] = await Promise.all([
+          this.api('/api/admin/orders'),
+          this.api('/api/admin/contacts'),
+          this.api('/api/admin/subscribers'),
+        ]);
+        this.orders=orderData.orders;
+        this.contacts=contactData.contacts;
+        this.subscribers=subscriberData.subscribers;
+        return;
+      }
+      const {orders}=await this.api('/api/orders');
       this.orders=orders;
     },
 
@@ -190,13 +207,28 @@ const store = reactive({
     removeItem(i){this.cart.splice(i,1);this.cart=[...this.cart]},
     startCheckout(){if(!this.cart.length)return;this.cartOpen=false;this.step=1;this.go('checkout')},
 
-    nextStep(s){
+    async nextStep(s){
       if(s===1 && (!this.customer.name||!this.customer.email)){this.notify('Preencha nome e e-mail');return}
       if(s===2){
         if(!this.customer.cep||!this.customer.street||!this.customer.city){this.notify('Complete o endereço');return}
+        await this.calculateShipping();
         this.step=3;return;
       }
       this.step=s+1;
+    },
+
+    async calculateShipping(){
+      this.quotingShipping=true;this.shippingQuoteError='';this.shippingQuotes=[];
+      try{
+        const result=await this.api('/api/shipping/quote',{method:'POST',body:JSON.stringify({
+          cep:this.customer.cep,items:this.cart,
+        })});
+        this.shippingQuotes=result.quotes||[];
+        this.shipping=this.shippingQuotes[0]?.id||'retirada';
+        if(!this.shippingQuotes.length)this.shippingQuoteError='Não há opções de entrega para este CEP. Você pode retirar no ateliê.';
+      }catch(error){
+        this.shipping='retirada';this.shippingQuoteError=error.message;
+      }finally{this.quotingShipping=false}
     },
 
     async lookupCep(){
@@ -219,42 +251,36 @@ const store = reactive({
     async previewFreight(){
       const cep=(this.pdpCep||'').replace(/\D/g,'');
       if(cep.length!==8){this.pdpFreight='Informe um CEP com 8 dígitos';return}
+      if(!this.product){this.pdpFreight='Selecione um produto';return}
       try{
-        const r=await fetch('https://viacep.com.br/ws/'+cep+'/json/');
-        const d=await r.json();
-        if(d.erro){this.pdpFreight='CEP não encontrado';return}
-        const area=this.areaM2; const pac=Math.round(39+area*18);
-        this.pdpFreight=`${d.localidade}/${d.uf} · PAC ${this.money(pac)} · SEDEX ${this.money(Math.round(pac*1.65))} (após fabricação)`;
-      }catch(e){this.pdpFreight='Falha ao consultar CEP'}
-    },
-
-    applyCoupon(){
-      const code=(this.couponCode||'').trim().toUpperCase();
-      const map={CASA10:{type:'pct',value:10},LUZ15:{type:'pct',value:15,min:800},FRETE0:{type:'frete',value:0}};
-      const c=map[code];
-      if(!c){this.coupon=null;this.couponMsg='Cupom inválido';return}
-      if(c.min && this.subtotal<c.min){this.couponMsg='Mínimo '+this.money(c.min);return}
-      this.coupon=c; this.couponMsg='Cupom '+code+' aplicado';
+        const result=await this.api('/api/shipping/quote',{method:'POST',body:JSON.stringify({
+          cep,items:[{id:this.product.id,qty:this.quantity,width:this.width,height:this.height}],
+        })});
+        this.pdpFreight=result.quotes.length
+          ?result.quotes.map(quote=>`${quote.company} · ${quote.name}: ${this.money(quote.price)}${quote.deliveryDays?` · ${quote.deliveryDays} dias úteis`:''}`).join(' | ')
+          :'Nenhuma transportadora atende este CEP.';
+      }catch(e){this.pdpFreight=e.message}
     },
 
     placeOrder(){
       if(!this.customer.terms){this.notify('Aceite as políticas para continuar');return}
       if(!this.cart.length){this.notify('Sacola vazia');return}
       if(!this.customer.name||!this.customer.email||!this.customer.cep||!this.customer.street||!this.customer.city){this.notify('Complete seus dados e endereço');this.step=1;return}
+      if(this.shipping!=='retirada'&&this.customer.cpf.replace(/\D/g,'').length!==11){this.notify('Informe um CPF válido para a entrega');this.step=1;return}
       this.submitOrder();
     },
 
     async submitOrder(){
+      if(this.submittingOrder)return;
+      this.submittingOrder=true;
       try{
-        const result=await this.api('/api/orders',{method:'POST',body:JSON.stringify({customer:this.customer,items:this.cart,payment:this.payMethod,shipping:this.shipping,coupon:this.couponCode})});
+        const result=await this.api('/api/orders',{method:'POST',body:JSON.stringify({customer:this.customer,items:this.cart,payment:'mercado_pago',shipping:this.shipping})});
         this.lastOrder=result.order;
         this.cart=[];
         if(this.user) await this.loadOrders();
-        const catalog=await this.api('/api/catalog');
-        this.products=catalog.products;
-        this.go('sucesso');
-        this.notify('Pedido '+this.lastOrder.number+' registrado');
+        window.location.assign(result.checkoutUrl);
       }catch(error){this.notify(error.message)}
+      finally{this.submittingOrder=false}
     },
 
     async updateOrderStatus(order){
@@ -264,10 +290,24 @@ const store = reactive({
       }catch(error){this.notify(error.message);await this.loadOrders()}
     },
 
-    async updateProductStock(product){
+    async shippingAction(order,action){
+      if(action==='purchase'&&!window.confirm('Esta ação compra a etiqueta e debita o saldo da carteira Melhor Envio. Continuar?'))return;
       try{
-        await this.api('/api/admin/products/'+product.id,{method:'PATCH',body:JSON.stringify({stock:product.stock})});
-        this.notify('Estoque atualizado');
+        await this.api(`/api/admin/orders/${encodeURIComponent(order.number)}/shipping/${action}`,{
+          method:'POST',body:JSON.stringify({invoiceKey:order.invoiceKey||''}),
+        });
+        this.notify(({prepare:'Envio preparado no Melhor Envio',purchase:'Etiqueta comprada',generate:'Etiqueta gerada',print:'Link privado da etiqueta atualizado'})[action]);
+        await this.loadOrders();
+      }catch(error){
+        this.notify(error.message);
+        await this.loadOrders();
+      }
+    },
+
+    async updateProduct(product){
+      try{
+        await this.api('/api/admin/products/'+product.id,{method:'PATCH',body:JSON.stringify({stock:product.stock,price:product.price})});
+        this.notify('Preço e estoque atualizados');
       }catch(error){this.notify(error.message)}
     },
 
@@ -304,6 +344,19 @@ const store = reactive({
       this.user=null;
       this.orders=[];
       this.adminOk=false;
+      this.adminPass='';
+      this.auth.password='';
+    },
+
+    async deleteAccount(){
+      if(!window.confirm('Excluir sua conta e remover seus dados pessoais? Os registros de pedidos serão mantidos anonimizados para histórico da loja.'))return;
+      try{
+        await this.api('/api/me',{method:'DELETE'});
+        this.user=null;
+        this.orders=[];
+        this.auth.password='';
+        this.notify('Conta excluída e dados pessoais removidos');
+      }catch(error){this.notify(error.message)}
     },
 
     async track(){

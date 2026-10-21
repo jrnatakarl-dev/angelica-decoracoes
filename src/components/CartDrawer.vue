@@ -49,7 +49,7 @@ export default {
       </div>
       <div v-show="cart.length" class="border-t border-ink/10 p-5">
         <div class="flex justify-between text-sm"><span>Subtotal estimado</span><b v-text="money(subtotal)"></b></div>
-        <p class="mt-2 text-[10px] leading-5 text-ink/50">Frete e descontos estimados no checkout. Pagamentos ainda não estão integrados.</p>
+        <p class="mt-2 text-[10px] leading-5 text-ink/50">As opções de entrega são consultadas no checkout. O pagamento é processado com segurança pelo Mercado Pago.</p>
         <button @click="startCheckout()" class="mt-4 w-full bg-ink px-4 py-4 text-[10px] font-bold uppercase tracking-[.17em] text-white hover:bg-clay">Continuar para checkout</button>
       </div>
     </aside>

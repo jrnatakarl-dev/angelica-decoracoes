@@ -25,6 +25,7 @@ export default {
         <div>
           <div class="relative min-h-[280px] bg-sand md:min-h-[490px]">
             <img :src="galleryImage" class="absolute inset-0 h-full w-full object-cover" :alt="product?.name">
+            <span v-if="product?.image?.startsWith('http')" class="absolute bottom-3 left-3 bg-paper/90 px-3 py-2 text-[9px] font-bold uppercase tracking-wider">Imagem ilustrativa · confirmar acabamento</span>
           </div>
           <div class="flex gap-2 p-3">
             <template v-for="(img,i) in product?.gallery||[]" :key="img">

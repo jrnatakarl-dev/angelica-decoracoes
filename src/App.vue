@@ -27,7 +27,7 @@ export default {
       <div class="flex min-h-[410px] flex-col justify-center bg-sand px-7 py-10 sm:px-12 lg:min-h-[610px] lg:px-16">
         <p class="text-[10px] font-bold uppercase tracking-[.25em] text-clay sm:text-xs">A luz muda tudo</p>
         <h1 class="mt-5 max-w-xl font-serif text-5xl leading-[1.05] sm:text-6xl xl:text-7xl">A casa sente quando a luz encontra o seu lugar.</h1>
-          <p class="mt-6 max-w-md text-sm leading-7 text-ink/65 sm:text-base">Escolha o modelo, informe as medidas e personalize a cor e a instalação. O site calcula uma estimativa de frete para o seu CEP.</p>
+          <p class="mt-6 max-w-md text-sm leading-7 text-ink/65 sm:text-base">Escolha o modelo, informe as medidas e personalize a cor e a instalação. Consulte as opções de entrega do Melhor Envio pelo seu CEP.</p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a href="#loja" class="bg-clay px-6 py-3.5 text-xs font-bold uppercase tracking-[.12em] text-white transition hover:bg-ink">Encontre a sua</a>
           <a href="#guia" class="border border-ink/25 px-6 py-3.5 text-xs font-bold uppercase tracking-[.12em] transition hover:border-clay hover:text-clay">Como medir</a>
@@ -56,7 +56,7 @@ export default {
       <div class="mx-auto grid max-w-7xl grid-cols-2 gap-y-5 px-5 py-6 sm:grid-cols-4 lg:px-8">
         <div class="flex items-center gap-3"><span class="font-serif text-2xl text-clay">01</span><p class="text-[10px] uppercase leading-4 tracking-[.12em]">Feito na<br>sua medida</p></div>
         <div class="flex items-center gap-3"><span class="font-serif text-2xl text-clay">02</span><p class="text-[10px] uppercase leading-4 tracking-[.12em]">Pedido salvo<br>com segurança</p></div>
-        <div class="flex items-center gap-3"><span class="font-serif text-2xl text-clay">03</span><p class="text-[10px] uppercase leading-4 tracking-[.12em]">Estimativa de<br>frete por CEP</p></div>
+        <div class="flex items-center gap-3"><span class="font-serif text-2xl text-clay">03</span><p class="text-[10px] uppercase leading-4 tracking-[.12em]">Opções reais de<br>frete por CEP</p></div>
         <div class="flex items-center gap-3"><span class="font-serif text-2xl text-clay">04</span><p class="text-[10px] uppercase leading-4 tracking-[.12em]">Histórico de<br>pedidos online</p></div>
       </div>
     </section>
@@ -93,6 +93,7 @@ export default {
             <p class="text-[10px] font-bold uppercase tracking-[.25em] text-clay">Catálogo completo</p>
             <h2 class="mt-3 font-serif text-4xl sm:text-5xl" v-text="shopTitle"></h2>
             <p class="mt-3 max-w-xl text-sm text-ink/60">Onze modelos. Personalize cor, instalação e medidas — o preço é por m², ao vivo.</p>
+            <p class="mt-2 max-w-xl text-xs text-ink/50">As fotos marcadas como ilustrativas mostram ambientes de referência; confirme a cor e o acabamento com nossa equipe.</p>
           </div>
           <div class="flex flex-wrap gap-2">
             <select v-model="filterLight" class="border border-ink/20 bg-white px-3 py-3 text-xs outline-none">
@@ -121,6 +122,7 @@ export default {
             <article class="group">
               <div class="relative aspect-[.82] overflow-hidden bg-paper">
                 <img :src="p.image" :alt="p.name" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]">
+                <span v-if="p.image.startsWith('http')" class="absolute bottom-3 right-3 bg-paper/90 px-2 py-1 text-[8px] font-bold uppercase tracking-wider">Imagem ilustrativa</span>
                 <span v-show="p.tag" class="absolute left-3 top-3 bg-paper px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.15em]" v-text="p.tag"></span>
                 <span v-show="p.stock<=3" class="absolute left-3 bottom-3 bg-ink px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.15em] text-white">Últimas unidades</span>
                 <button @click="toggleFavorite(p.id)" class="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-paper/90 text-xl transition hover:bg-clay hover:text-white" :aria-label="favorites.includes(p.id)?'Remover favorito':'Adicionar favorito'" v-text="favorites.includes(p.id)?'♥':'♡'"></button>
@@ -226,6 +228,10 @@ export default {
           <label class="block text-[10px] font-bold uppercase tracking-widest">Nome<input v-model="customer.name" class="mt-2 w-full border border-ink/20 bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal" placeholder="Nome completo"></label>
           <label class="block text-[10px] font-bold uppercase tracking-widest">E-mail<input type="email" v-model="customer.email" class="mt-2 w-full border border-ink/20 bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal"></label>
           <label class="block text-[10px] font-bold uppercase tracking-widest">WhatsApp<input v-model="customer.phone" class="mt-2 w-full border border-ink/20 bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal" placeholder="(11) 99999-0000"></label>
+          <label class="block text-[10px] font-bold uppercase tracking-widest">CPF do destinatário
+            <input v-model="customer.cpf" inputmode="numeric" maxlength="14" class="mt-2 w-full border border-ink/20 bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal" placeholder="000.000.000-00">
+            <span class="mt-1 block text-[10px] font-normal normal-case tracking-normal text-ink/50">Necessário para emitir a etiqueta quando escolher entrega.</span>
+          </label>
           <p class="text-xs text-ink/55">Entre na sua conta para associar o pedido ao seu histórico. Sem login, o pedido também será salvo.</p>
           <button @click="nextStep(1)" class="bg-ink px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-white">Continuar</button>
         </div>
@@ -253,6 +259,8 @@ export default {
           </div>
         </div>
         <div v-show="step===3" class="space-y-3">
+          <p v-if="shippingQuoteError" class="border border-amber-700/30 bg-amber-50 p-3 text-xs text-amber-900" v-text="shippingQuoteError"></p>
+          <p class="text-xs text-ink/55">Prazo do Melhor Envio não inclui o tempo de fabricação.</p>
           <template v-for="s in shippingOptions" :key="s.id">
             <label class="flex cursor-pointer items-center justify-between border p-4" :class="shipping===s.id?'border-clay bg-clay/5':'border-ink/15'">
               <span class="flex items-center gap-3">
@@ -264,29 +272,19 @@ export default {
           </template>
           <label class="block text-[10px] font-bold uppercase tracking-widest">Observação para instalação<textarea v-model="customer.note" rows="2" class="mt-2 w-full border border-ink/20 bg-white px-3 py-3 text-sm font-normal normal-case tracking-normal"></textarea></label>
           <div class="flex gap-2">
-            <button @click="step=2" class="border border-ink/20 px-5 py-3 text-[10px] font-bold uppercase">Voltar</button>
+            <button @click="step=2" class="border border-ink/20 px-5 py-3 text-[10px] font-bold uppercase">Voltar e recalcular</button>
             <button @click="step=4" class="bg-ink px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-white">Ir ao pagamento</button>
           </div>
         </div>
         <div v-show="step===4" class="space-y-4">
-          <div class="grid gap-3">
-            <label class="flex cursor-pointer items-center gap-3 border p-4" :class="payMethod==='pix'?'border-clay bg-clay/5':'border-ink/15'"><input type="radio" value="pix" v-model="payMethod"><span><b>Pix (simulação)</b><span class="block text-xs text-ink/55">Sem cobrança real · desconto demonstrativo de 5%</span></span></label>
-            <label class="flex cursor-pointer items-center gap-3 border p-4" :class="payMethod==='card'?'border-clay bg-clay/5':'border-ink/15'"><input type="radio" value="card" v-model="payMethod"><span><b>Cartão (simulação)</b><span class="block text-xs text-ink/55">Pagamento não processado</span></span></label>
-            <label class="flex cursor-pointer items-center gap-3 border p-4" :class="payMethod==='boleto'?'border-clay bg-clay/5':'border-ink/15'"><input type="radio" value="boleto" v-model="payMethod"><span><b>Boleto (simulação)</b><span class="block text-xs text-ink/55">Nenhum boleto será emitido</span></span></label>
-          </div>
-          <div v-show="payMethod==='card'" class="grid gap-3">
-            <div class="grid grid-cols-2 gap-3">
-              <input v-model="card.name" placeholder="Nome impresso" class="border border-ink/20 bg-white px-3 py-3 text-sm">
-              <select v-model.number="card.installments" class="border border-ink/20 bg-white px-3 py-3 text-sm">
-                <template v-for="n in 6" :key="n"><option :value="n" v-text="n+'x de '+money(grandTotal/n)+' sem juros'"></option></template>
-              </select>
-            </div>
-            <p class="text-[10px] text-ink/60">Demonstração: pagamentos não são processados. Não informe dados de cartão.</p>
+          <div class="border border-ink/15 bg-white p-4">
+            <b class="block text-sm">Pagamento seguro pelo Mercado Pago</b>
+            <p class="mt-1 text-xs leading-5 text-ink/55">Você será direcionado ao Checkout Pro para escolher Pix, cartão ou outro meio disponível. Os dados do cartão não passam pela Angélica Casa.</p>
           </div>
           <label class="flex items-center gap-2 text-sm"><input type="checkbox" v-model="customer.terms"> Li e aceito a <button type="button" class="underline" @click="go('politicas')">política de troca e privacidade</button></label>
           <div class="flex gap-2">
             <button @click="step=3" class="border border-ink/20 px-5 py-3 text-[10px] font-bold uppercase">Voltar</button>
-            <button @click="placeOrder()" class="bg-clay px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-ink">Criar pedido · <span v-text="money(grandTotal)"></span></button>
+            <button :disabled="submittingOrder" @click="placeOrder()" class="bg-clay px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-ink disabled:cursor-wait disabled:opacity-60">{{ submittingOrder ? 'Conectando ao Mercado Pago…' : 'Pagar com Mercado Pago · ' + money(grandTotal) }}</button>
           </div>
         </div>
       </div>
@@ -302,18 +300,13 @@ export default {
             </div>
           </div>
         </template>
-        <div class="mt-4 flex gap-2">
-          <input v-model="couponCode" placeholder="Cupom" class="w-full border border-ink/20 px-3 py-2 text-sm">
-          <button @click="applyCoupon()" class="border border-ink px-3 text-[10px] font-bold uppercase">Ok</button>
-        </div>
-        <p v-show="couponMsg" class="mt-2 text-xs text-olive" v-text="couponMsg"></p>
         <div class="mt-4 space-y-2 text-sm">
           <div class="flex justify-between"><span>Subtotal</span><span v-text="money(subtotal)"></span></div>
-          <div class="flex justify-between"><span>Desconto</span><span v-text="'- '+money(discount)"></span></div>
+          <div v-if="discount>0" class="flex justify-between"><span>Desconto</span><span v-text="'- '+money(discount)"></span></div>
           <div class="flex justify-between"><span>Frete</span><span v-text="money(shippingPrice)"></span></div>
           <div class="flex justify-between border-t border-ink/10 pt-2 font-semibold"><span>Total</span><span v-text="money(grandTotal)"></span></div>
         </div>
-        <p class="mt-3 text-[10px] leading-4 text-ink/45">Cupons: CASA10, LUZ15, FRETE0. Troca em 7 dias (CDC).</p>
+        <p class="mt-3 text-[10px] leading-4 text-ink/45">Frete calculado pelo Melhor Envio. O prazo de transporte começa após a fabricação.</p>
       </aside>
     </div>
   </main>
@@ -322,8 +315,11 @@ export default {
   <main v-show="view==='sucesso'" v-cloak class="mx-auto max-w-xl px-4 py-16 text-center sm:px-8">
     <p class="text-[10px] font-bold uppercase tracking-[.25em] text-clay">Pedido registrado</p>
     <h1 class="mt-3 font-serif text-4xl">Recebemos seu pedido.</h1>
-    <p class="mt-3 text-sm text-ink/60">O pedido foi salvo no banco de dados. Pagamentos ainda não são processados por esta versão.</p>
-    <p class="mt-3 text-sm text-ink/60">Pedido <b v-text="lastOrder?.number"></b> · <span v-text="lastOrder?.payment"></span></p>
+    <p class="mt-3 text-sm text-ink/60" v-if="lastOrder?.paymentStatus==='approved'">Pagamento aprovado. Seu pedido está sendo preparado para processamento.</p>
+    <p class="mt-3 text-sm text-ink/60" v-else-if="paymentReturn==='failure'">O pagamento não foi concluído. Você pode tentar novamente pelo link seguro abaixo.</p>
+    <p class="mt-3 text-sm text-ink/60" v-else>Pedido registrado. O status será atualizado após a confirmação do Mercado Pago.</p>
+    <p class="mt-3 text-sm text-ink/60">Pedido <b v-text="lastOrder?.number"></b> · Pagamento: <span v-text="lastOrder?.paymentStatusLabel || 'aguardando confirmação'"></span></p>
+    <a v-if="lastOrder?.checkoutUrl && lastOrder?.paymentStatus!=='approved'" :href="lastOrder.checkoutUrl" class="mt-5 inline-flex bg-clay px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-white">Continuar pagamento</a>
     <p class="mt-6 text-sm" v-text="'Número do pedido: '+(lastOrder?.number||'—')+' · '+(lastOrder?.status||'')"></p>
     <div class="mt-8 flex justify-center gap-3">
       <button @click="go('conta')" class="bg-ink px-5 py-3 text-[10px] font-bold uppercase text-white">Acompanhar</button>
@@ -334,7 +330,7 @@ export default {
   <!-- ACCOUNT -->
   <main v-show="view==='conta'" v-cloak class="mx-auto max-w-4xl px-4 py-12 sm:px-8">
     <h1 class="font-serif text-4xl">Minha conta</h1>
-    <p class="mt-2 text-sm text-ink/60">Conta demonstrativa: os dados ficam somente neste navegador. Use uma senha de teste.</p>
+    <p class="mt-2 text-sm text-ink/60">Entre na sua conta para consultar os pedidos associados ao seu e-mail. Seus dados de acesso são armazenados com segurança no servidor.</p>
     <div v-show="!user" class="mt-8 grid gap-10 md:grid-cols-2">
       <form @submit.prevent="login()" class="space-y-3">
         <h2 class="font-serif text-2xl">Entrar</h2>
@@ -362,7 +358,7 @@ export default {
           <div class="flex flex-wrap justify-between gap-2">
             <div>
               <b v-text="o.number"></b>
-              <p class="text-xs text-ink/50" v-text="o.date+' · '+o.payment+' · '+o.status"></p>
+              <p class="text-xs text-ink/50" v-text="o.date+' · '+o.payment+' · '+o.paymentStatusLabel+' · '+o.status"></p>
             </div>
             <b v-text="money(o.total)"></b>
           </div>
@@ -372,6 +368,10 @@ export default {
           <p class="mt-2 text-[11px] text-ink/55" v-text="'Pagamento: '+o.payment"></p>
         </article>
       </template>
+      <div v-if="user?.role!=='admin'">
+        <button @click="deleteAccount()" class="mt-8 border border-red-800/40 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-red-800">Excluir conta e dados pessoais</button>
+        <p class="mt-2 text-xs text-ink/50">Pedidos ficam anonimizados para manter o histórico da loja; perfil, sessões, mensagens e inscrição de e-mail são removidos.</p>
+      </div>
     </div>
   </main>
 
@@ -436,11 +436,11 @@ export default {
   <main v-show="view==='politicas'" v-cloak class="mx-auto max-w-3xl px-4 py-12 text-sm leading-7 text-ink/75 sm:px-8">
     <h1 class="font-serif text-4xl text-ink">Políticas da loja</h1>
     <h2 class="mt-8 font-serif text-2xl text-ink">Troca e arrependimento</h2>
-    <p>Você tem 7 dias após o recebimento para desistir da compra (CDC). Peças sob medida sem defeito podem ter taxa de reprocessamento. Defeito de fabricação: troca integral em até 12 meses.</p>
+    <p>Consulte nossa equipe antes de concluir o pedido para confirmar condições de cancelamento, devolução, garantia e produtos feitos sob medida. Esta informação deverá ser substituída pela política comercial revisada da loja.</p>
     <h2 class="mt-8 font-serif text-2xl text-ink">Privacidade (LGPD)</h2>
-    <p>Coletamos nome, e-mail, telefone e endereço só para entregar o pedido. Você pode pedir exclusão em Minha conta. Pedidos fiscais são retidos pelo prazo legal.</p>
+    <p>Os dados são usados para cadastro, atendimento, pagamento e processamento dos pedidos. Em pedidos com entrega, o CPF, telefone e endereço do destinatário são enviados ao Melhor Envio para preparar a etiqueta. Em Minha conta você pode excluir o perfil e solicitar remoção dos dados pessoais associados; registros comerciais podem ser mantidos anonimizados. Esta política precisa ser revisada para refletir os processos e prazos efetivos da loja antes da publicação.</p>
     <h2 class="mt-8 font-serif text-2xl text-ink">Entrega</h2>
-    <p>O prazo soma fabricação (5–12 dias úteis) + transporte. Instalações em teto e vãos irregulares podem exigir visita técnica.</p>
+    <p>Os prazos de fabricação e transporte são estimativas e devem ser confirmados para cada produto e CEP antes da publicação da loja.</p>
   </main>
 
   <!-- ADMIN -->
@@ -460,7 +460,7 @@ export default {
           <p class="text-[10px] font-bold uppercase tracking-[.2em] text-clay">Backoffice</p>
           <h1 class="font-serif text-4xl">Pedidos e estoque</h1>
         </div>
-        <button @click="adminOk=false" class="text-xs uppercase underline">Sair do painel</button>
+        <button @click="logout();go('home')" class="text-xs uppercase underline">Sair do painel</button>
       </div>
       <div class="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         <div class="border border-ink/10 bg-white p-4"><p class="text-[10px] uppercase text-ink/45">Pedidos</p><p class="font-serif text-3xl" v-text="orders.length"></p></div>
@@ -470,8 +470,8 @@ export default {
       </div>
       <h2 class="mt-10 font-serif text-2xl">Pedidos</h2>
       <div class="mt-4 overflow-x-auto">
-        <table class="w-full min-w-[640px] text-left text-sm">
-          <thead><tr class="border-b border-ink/15 text-[10px] uppercase tracking-wider text-ink/45"><th class="py-2">Número</th><th>Cliente</th><th>Status</th><th>Total</th><th>Pagamento</th></tr></thead>
+        <table class="w-full min-w-[860px] text-left text-sm">
+          <thead><tr class="border-b border-ink/15 text-[10px] uppercase tracking-wider text-ink/45"><th class="py-2">Número</th><th>Cliente</th><th>Status do pedido</th><th>Pagamento</th><th>Total</th><th>Expedição</th></tr></thead>
           <tbody>
             <template v-for="o in orders" :key="o.number">
               <tr class="border-b border-ink/10">
@@ -480,6 +480,7 @@ export default {
                 <td>
                   <select v-model="o.status" @change="updateOrderStatus(o)" class="border border-ink/15 bg-white px-2 py-1 text-xs">
                     <option>Aguardando pagamento</option>
+                    <option>Aguardando análise</option>
                     <option>Pago</option>
                     <option>Em fabricação</option>
                     <option>Enviado</option>
@@ -487,8 +488,26 @@ export default {
                     <option>Cancelado</option>
                   </select>
                 </td>
+                <td><span v-text="o.payment"></span><small class="block text-ink/50" v-text="o.paymentStatusLabel"></small></td>
                 <td v-text="money(o.total)"></td>
-                <td v-text="o.payment"></td>
+                <td class="max-w-[220px] py-3">
+                  <template v-if="o.shipping==='retirada'">
+                    <small>Retirada no ateliê</small>
+                  </template>
+                  <template v-else-if="o.paymentStatus==='approved'">
+                    <small class="block text-ink/55" v-text="'Etapa: '+(o.shippingStage||'pendente')"></small>
+                    <input v-if="!o.shippingStage" v-model="o.invoiceKey" inputmode="numeric" maxlength="44" placeholder="Chave NF-e (44 dígitos)" class="my-1 w-full border border-ink/20 px-2 py-1 text-[10px]">
+                    <button v-if="!o.shippingStage" @click="shippingAction(o,'prepare')" class="border border-ink/20 px-2 py-1 text-[10px] uppercase">Preparar</button>
+                    <button v-else-if="o.shippingStage==='cart'" @click="shippingAction(o,'purchase')" class="border border-clay px-2 py-1 text-[10px] uppercase text-clay">Comprar etiqueta</button>
+                    <button v-else-if="o.shippingStage==='purchased'" @click="shippingAction(o,'generate')" class="border border-ink/20 px-2 py-1 text-[10px] uppercase">Gerar etiqueta</button>
+                    <template v-else-if="['generated','printed'].includes(o.shippingStage)">
+                      <a v-if="o.shippingLabelUrl" :href="o.shippingLabelUrl" target="_blank" rel="noopener noreferrer" class="mr-2 text-[10px] underline">Imprimir</a>
+                      <button @click="shippingAction(o,'print')" class="border border-ink/20 px-2 py-1 text-[10px] uppercase">Atualizar link</button>
+                    </template>
+                    <small v-else-if="['preparing','checkout_started','generation_started'].includes(o.shippingStage)" class="block text-amber-800">Ação iniciada. Verifique o Melhor Envio antes de repetir para evitar duplicidade.</small>
+                  </template>
+                  <small v-else>Disponível após a aprovação</small>
+                </td>
               </tr>
             </template>
           </tbody>
@@ -498,10 +517,24 @@ export default {
       <div class="mt-4 grid gap-3 md:grid-cols-2">
         <template v-for="p in products" :key="'st'+p.id">
           <div class="flex items-center justify-between border border-ink/10 bg-white p-3">
-            <span class="text-sm" v-text="p.name"></span>
-            <input type="number" min="0" v-model.number="p.stock" @change="updateProductStock(p)" class="w-20 border border-ink/20 px-2 py-1 text-sm">
+            <span class="min-w-0 flex-1 text-sm" v-text="p.name"></span>
+            <label class="flex items-center gap-1 text-xs">R$/m² <input type="number" min="0.01" max="100000" step="0.01" v-model.number="p.price" @change="updateProduct(p)" class="w-24 border border-ink/20 px-2 py-1 text-sm"></label>
+            <label class="flex items-center gap-1 text-xs">Un. <input type="number" min="0" max="100000" step="1" v-model.number="p.stock" @change="updateProduct(p)" class="w-20 border border-ink/20 px-2 py-1 text-sm"></label>
           </div>
         </template>
+      </div>
+      <h2 class="mt-10 font-serif text-2xl">Mensagens de contato</h2>
+      <div v-show="!contacts.length" class="mt-3 text-sm text-ink/55">Nenhuma mensagem recebida.</div>
+      <div class="mt-4 grid gap-3 md:grid-cols-2">
+        <article v-for="message in contacts" :key="message.id" class="border border-ink/10 bg-white p-4">
+          <div class="flex justify-between gap-3"><b v-text="message.name"></b><a class="text-xs underline" :href="'mailto:'+message.email" v-text="message.email"></a></div>
+          <p class="mt-1 text-[10px] uppercase text-ink/45" v-text="message.interest+' · '+message.created_at"></p>
+          <p class="mt-3 whitespace-pre-wrap text-sm" v-text="message.message"></p>
+        </article>
+      </div>
+      <h2 class="mt-10 font-serif text-2xl">Inscritos na newsletter <span class="text-base text-ink/50" v-text="'('+subscribers.length+')'"></span></h2>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <a v-for="subscriber in subscribers" :key="subscriber.email" class="border border-ink/10 bg-white px-3 py-2 text-xs underline" :href="'mailto:'+subscriber.email" v-text="subscriber.email"></a>
       </div>
     </div>
   </main>

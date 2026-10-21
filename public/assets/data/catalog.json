@@ -406,11 +406,11 @@
     },
     {
       "q": "Quais formas de pagamento?",
-      "a": "Os pedidos são registrados no site. O processamento de Pix, cartão e boleto ainda precisa ser integrado; não faça pagamentos por esta versão."
+      "a": "O pagamento é realizado com segurança pelo Mercado Pago. As formas disponíveis são exibidas pelo provedor no checkout."
     },
     {
       "q": "Qual o prazo?",
-      "a": "Os prazos de fabricação variam de 6 a 12 dias úteis conforme o modelo. O frete exibido é uma estimativa e precisa ser confirmado antes da venda."
+      "a": "Os prazos de fabricação variam de 6 a 12 dias úteis conforme o modelo. O prazo de transporte é exibido pelas opções do Melhor Envio no checkout."
     },
     {
       "q": "Posso trocar?",
