@@ -25,7 +25,7 @@ const validCpf = (value) => {
 };
 
 const store = reactive({
-    categories:[], products:[], faqs:[], catalogStatus:'loading',
+    categories:[], products:[], faqs:[], pickupConfig:{enabled:false,label:'',address:''}, catalogStatus:'loading',
 
     view:'home', category:'', favoritesOnly:false, query:'', sort:'featured', filterLight:'',
     favorites:[], cart:[], compare:[], recent:[], orders:[], contacts:[], subscribers:[], product:null,
@@ -59,7 +59,7 @@ const store = reactive({
     get grandTotal(){return Math.max(0,this.subtotal-this.discount+this.shippingPrice)},
     get shippingOptions(){
       return [
-        {id:'retirada',name:'Retirada no ateliê',eta:'Combine o horário após a compra',price:0},
+        ...(this.pickupConfig.enabled?[{id:'retirada',name:this.pickupConfig.label,eta:this.pickupConfig.address,price:0}]:[]),
         ...this.shippingQuotes.map(quote=>({
           id:quote.id,name:`${quote.company} · ${quote.name}`,
           eta:quote.deliveryDays?`${quote.deliveryDays} dias úteis após fabricação`:'Prazo informado pela transportadora',
@@ -113,6 +113,7 @@ const store = reactive({
         this.categories=Array.isArray(catalog.categories)?catalog.categories:[];
         this.products=catalog.products;
         this.faqs=Array.isArray(catalog.faqs)?catalog.faqs:[];
+        this.pickupConfig=catalog.pickup?.enabled?catalog.pickup:{enabled:false,label:'',address:''};
         const productsById = new Map(this.products.map(product => [product.id, product]));
         this.favorites=this.favorites.filter(id => productsById.has(id));
         this.compare=this.compare.filter(id => productsById.has(id));
@@ -249,7 +250,8 @@ const store = reactive({
       if(s===1 && (!this.customer.name||!this.customer.email)){this.notify('Preencha nome e e-mail');return}
       if(s===2){
         if(!this.customer.cep||!this.customer.street||!this.customer.city){this.notify('Complete o endereço');return}
-        await this.calculateShipping();
+        const available=await this.calculateShipping();
+        if(!available)return;
         this.step=3;return;
       }
       this.step=s+1;
@@ -262,10 +264,19 @@ const store = reactive({
           cep:this.customer.cep,items:this.cart,
         })});
         this.shippingQuotes=result.quotes||[];
-        this.shipping=this.shippingQuotes[0]?.id||'retirada';
-        if(!this.shippingQuotes.length)this.shippingQuoteError='Não há opções de entrega para este CEP. Você pode retirar no ateliê.';
+        this.shipping=this.shippingQuotes[0]?.id||(this.pickupConfig.enabled?'retirada':'');
+        if(!this.shippingQuotes.length&&!this.pickupConfig.enabled){
+          this.shippingQuoteError='Não há opções de entrega para este CEP.';
+          this.notify(this.shippingQuoteError);
+          return false;
+        }
+        if(!this.shippingQuotes.length)this.shippingQuoteError='Não há transportadoras para este CEP. A retirada configurada está disponível.';
+        return true;
       }catch(error){
-        this.shipping='retirada';this.shippingQuoteError=error.message;
+        this.shipping=this.pickupConfig.enabled?'retirada':'';
+        this.shippingQuoteError=this.pickupConfig.enabled?`${error.message} Você pode escolher a retirada configurada.`:error.message;
+        if(!this.pickupConfig.enabled)this.notify(error.message);
+        return this.pickupConfig.enabled;
       }finally{this.quotingShipping=false}
     },
 

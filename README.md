@@ -25,36 +25,26 @@ Para criar o primeiro administrador local:
 python3 -m server.manage create-admin admin@seudominio.com
 ```
 
-## Publicação com Docker e HTTPS
+## Publicação em VPS (Docker e HTTPS)
 
 O Compose monta a aplicação e o Caddy. O Caddy gerencia HTTPS automaticamente; a porta 8000 da aplicação não fica exposta à internet.
 
-1. Aponte o DNS do domínio para o servidor e libere as portas 80 e 443.
-2. Copie `.env.example` para `.env`. Defina `SITE_DOMAIN`, credenciais do Mercado Pago, token/CEP de origem e dados do Melhor Envio; proteja o arquivo (`chmod 600 .env`) e nunca o envie ao Git.
-3. No painel do Mercado Pago, configure o webhook de pagamentos para `https://SEU_DOMINIO/api/payments/mercadopago/webhook` e copie o segredo gerado para `MP_WEBHOOK_SECRET`.
-4. Inicie a publicação:
+1. Use um VPS com Docker, aponte o DNS do domínio para o IP público do servidor e libere TCP 80/443. O Caddy solicita e renova HTTPS automaticamente depois que o DNS estiver correto.
+2. Envie o repositório ao VPS e execute os comandos na pasta do projeto.
+3. Copie `.env.example` para `.env`, preencha o domínio e as credenciais reais, proteja o arquivo (`chmod 600 .env`) e nunca o envie ao Git. Mantenha `STORE_PICKUP_ENABLED=0`, a menos que a retirada esteja disponível e o endereço completo esteja definido.
+4. No Mercado Pago, configure o webhook para `https://SEU_DOMINIO/api/payments/mercadopago/webhook` e copie o segredo gerado para `MP_WEBHOOK_SECRET`.
+5. Inicie a publicação:
 
 ```bash
 docker compose up --build -d
 docker compose exec app python -m server.manage create-admin admin@seudominio.com
 ```
 
-Use primeiro credenciais de teste do Mercado Pago (`TEST-...`) e simule aprovação, recusa e pagamento pendente. Depois de validar o webhook e o fluxo, substitua pelas credenciais de produção da sua conta. O serviço aceita pagamentos somente quando há access token, segredo de webhook e URL pública HTTPS configurados.
+Use primeiro credenciais de teste do Mercado Pago (`TEST-...`) e simule aprovação, recusa e pagamento pendente. Depois de validar o webhook e o fluxo, substitua pelas credenciais de produção. O serviço só aceita pedidos quando há access token, segredo de webhook e URL pública HTTPS. A retirada só é oferecida quando explicitamente habilitada com endereço no servidor, e o backend exige o aceite das políticas.
 
 Checkout Pro usa a API oficial de preferências e redireciona o comprador para o Mercado Pago. O retorno do navegador não aprova o pedido: a aprovação só ocorre após o servidor verificar a assinatura do webhook, consultar o pagamento no Mercado Pago e conferir referência, moeda e valor total.
 
 Documentação oficial: [criar preferência](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/create-payment-preference), [webhooks e assinatura](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/payment-notifications).
-
-## Publicação no Vercel com backend Docker
-
-O Vercel hospeda o frontend Vite e encaminha `/api/*` para o backend Render declarado em `render.yaml`. O backend preserva o SQLite em um disco persistente montado em `/data`; o serviço fica em uma instância para manter o SQLite consistente. A URL do proxy está configurada como `https://angelica-casa-api.onrender.com`; se o Render atribuir outro endereço, atualize o destino em `vercel.json` antes de publicar o frontend.
-
-1. Conecte o repositório ao GitHub e importe-o no Vercel. O `vercel.json` configura `npm run build`, `dist` e o proxy de API.
-2. Crie o serviço pelo Blueprint `render.yaml`. Ele usa Docker, verifica `/api/health` e monta 1 GB persistente em `/data`. O disco persistente exige um serviço pago no Render; serviços grátis não preservam o disco entre reinícios e publicações. Confirme o preço no painel antes de provisionar. O disco limita o serviço a uma instância e desativa deploys sem interrupção. [Discos persistentes](https://render.com/docs/disks) · [Planos e preços](https://render.com/pricing).
-3. No ambiente do Render, configure `APP_PUBLIC_URL` com a URL de produção `https://<projeto>.vercel.app`. Adicione credenciais reais do Mercado Pago (`MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`) e do Melhor Envio (`ME_ACCESS_TOKEN`, `ME_USER_AGENT`, `ME_FROM_*`, `ME_PRODUCT_WEIGHT_KG`, `ME_PRODUCT_DEPTH_CM`). O webhook do Mercado Pago deve apontar para `https://<projeto>.vercel.app/api/payments/mercadopago/webhook`.
-4. Mantenha `ME_SANDBOX=1` durante a homologação. Sem credenciais reais, catálogo e saúde da API funcionam, mas pagamentos e cotações ficam indisponíveis.
-
-Vercel encaminha requisições para uma origem externa com rewrites, preservando a URL vista pelo comprador. [Documentação de rewrites do Vercel](https://vercel.com/docs/routing/rewrites).
 
 ## Imagens e catálogo
 

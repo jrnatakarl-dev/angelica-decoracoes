@@ -368,7 +368,14 @@ class StoreHandler(BaseHTTPRequestHandler):
                         product["stock"] = row["stock"]
                         products.append(product)
                     catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-                    self.send_json(200, {"products": products, "categories": catalog["categories"], "faqs": catalog["faqs"]})
+                    pickup_enabled = os.environ.get("STORE_PICKUP_ENABLED", "0") == "1"
+                    pickup_address = os.environ.get("STORE_PICKUP_ADDRESS", "").strip()
+                    pickup = {
+                        "enabled": pickup_enabled and bool(pickup_address),
+                        "label": os.environ.get("STORE_PICKUP_LABEL", "Retirada no ateliê").strip(),
+                        "address": pickup_address,
+                    }
+                    self.send_json(200, {"products": products, "categories": catalog["categories"], "faqs": catalog["faqs"], "pickup": pickup})
                 elif parsed.path == "/api/me":
                     user = self.session_user(db)
                     self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "role": user["role"]} if user else None})
@@ -604,6 +611,8 @@ class StoreHandler(BaseHTTPRequestHandler):
                     customer = data.get("customer") or {}
                     if not isinstance(customer, dict):
                         raise ApiError(400, "Dados do cliente inválidos.")
+                    if customer.get("terms") is not True:
+                        raise ApiError(400, "Aceite as políticas da loja antes de concluir o pedido.")
                     email = user["email"] if user else str(customer.get("email", "")).strip().lower()
                     name = user["name"] if user else str(customer.get("name", "")).strip()
                     cep = re.sub(r"\D", "", str(customer.get("cep", "")))
@@ -653,8 +662,10 @@ class StoreHandler(BaseHTTPRequestHandler):
                     if not isinstance(shipping_mode, str):
                         raise ApiError(400, "Forma de entrega inválida.")
                     if shipping_mode == "retirada":
+                        if os.environ.get("STORE_PICKUP_ENABLED", "0") != "1" or not os.environ.get("STORE_PICKUP_ADDRESS", "").strip():
+                            raise ApiError(400, "Retirada no ateliê não está disponível. Escolha uma opção de entrega.")
                         shipping = 0
-                        shipping_name = "Retirada no ateliê"
+                        shipping_name = os.environ.get("STORE_PICKUP_LABEL", "Retirada no ateliê").strip()
                     else:
                         if not valid_cpf(customer.get("cpf")):
                             raise ApiError(400, "Informe o CPF do destinatário para concluir o frete.")
