@@ -1,32 +1,93 @@
 {
-  "note": "Imagens de referência ilustrativas. Confirme que representam o produto, material e acabamento vendidos antes de publicar a loja.",
+  "note": "A loja confirmou autorização de uso comercial para estas imagens.",
   "images": [
     {
       "file": "product-01-main.webp",
       "productId": 1,
-      "author": "Ruan Richard Rodrigues",
-      "source": "https://unsplash.com/photos/white-window-blinds-on-window-Bij3VCHV9e8",
-      "license": "Unsplash License",
-      "licenseUrl": "https://unsplash.com/license",
-      "description": "Persiana veneziana horizontal branca"
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Horizontal de Alumínio"
+    },
+    {
+      "file": "product-02-main.webp",
+      "productId": 2,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Horizontal de Madeira Sintética"
     },
     {
       "file": "product-03-main.webp",
       "productId": 3,
-      "author": "Sarguninder Singh",
-      "source": "https://unsplash.com/photos/vertical-blinds-partially-covering-a-window-with-light-filtering-through-ui5N4nnc568",
-      "license": "Unsplash License",
-      "licenseUrl": "https://unsplash.com/license",
-      "description": "Persiana vertical branca com luz filtrada"
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Vertical de Tecido"
+    },
+    {
+      "file": "product-04-main.webp",
+      "productId": 4,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Double Vision"
+    },
+    {
+      "file": "product-05-main.webp",
+      "productId": 5,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Painel Europeu"
+    },
+    {
+      "file": "product-06-main.webp",
+      "productId": 6,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Rolô Blackout"
+    },
+    {
+      "file": "product-07-main.webp",
+      "productId": 7,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Rolô Tela Solar"
+    },
+    {
+      "file": "product-08-main.webp",
+      "productId": 8,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Rolô Translúcida"
+    },
+    {
+      "file": "product-09-main.webp",
+      "productId": 9,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Romana Blackout"
+    },
+    {
+      "file": "product-10-main.webp",
+      "productId": 10,
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana Romana Translúcida"
     },
     {
       "file": "product-11-main.webp",
       "productId": 11,
-      "author": "Диана Дунаева",
-      "source": "https://www.pexels.com/photo/low-angle-shot-of-window-ceiling-10096727/",
-      "license": "Pexels License",
-      "licenseUrl": "https://www.pexels.com/license/",
-      "description": "Claraboia com persiana interna"
+      "author": "Fornecido pela loja",
+      "source": "Imagem enviada pelo usuário",
+      "license": "Autorização comercial confirmada pela loja",
+      "description": "Persiana de Teto"
     }
   ]
 }

@@ -36,6 +36,6 @@ export default {
         <a class="mt-2 block text-white/60 hover:text-white" href="#" @click.prevent="go('contato')">Contato</a>
       </div>
     </div>
-    <div class="border-t border-white/15 px-4 py-4 text-center text-[10px] text-white/45">© <span v-text="new Date().getFullYear()"></span> Angélica Casa · Plataforma em desenvolvimento.</div>
+    <div class="border-t border-white/15 px-4 py-4 text-center text-[10px] text-white/45">© <span v-text="new Date().getFullYear()"></span> Angélica Casa · Persianas sob medida.</div>
   </footer>
 </template>

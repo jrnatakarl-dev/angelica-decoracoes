@@ -54,6 +54,16 @@ def verify_password(password: str, encoded: str) -> bool:
         return False
 
 
+def valid_cpf(value: object) -> bool:
+    cpf = re.sub(r"\D", "", str(value or ""))
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+    digits = [int(char) for char in cpf]
+    first = (sum(digit * weight for digit, weight in zip(digits[:9], range(10, 1, -1))) * 10) % 11 % 10
+    second = (sum(digit * weight for digit, weight in zip(digits[:10], range(11, 1, -1))) * 10) % 11 % 10
+    return digits[9:] == [first, second]
+
+
 def public_order(row: sqlite3.Row, include_shipping_operations: bool = False) -> dict:
     data = json.loads(row["data_json"])
     data.update({
@@ -62,7 +72,7 @@ def public_order(row: sqlite3.Row, include_shipping_operations: bool = False) ->
         "shippingPrice": row["shipping_cents"] / 100, "total": row["total_cents"] / 100,
         "date": row["created_at"],
         "paymentStatus": row["payment_status"],
-        "paymentStatusLabel": {"pending": "Aguardando confirmação", "approved": "Aprovado", "rejected": "Recusado", "cancelled": "Cancelado", "refunded": "Reembolsado", "charged_back": "Contestação"}.get(row["payment_status"], row["payment_status"]),
+        "paymentStatusLabel": {"pending": "Aguardando confirmação", "approved": "Aprovado", "rejected": "Recusado", "cancelled": "Cancelado", "expired": "Expirado", "refunded": "Reembolsado", "charged_back": "Contestação"}.get(row["payment_status"], row["payment_status"]),
         "paymentProvider": row["payment_provider"],
         "checkoutUrl": row["checkout_url"],
     })
@@ -226,6 +236,8 @@ def extract_provider_id(response: list | dict) -> str:
 
 def create_payment_preference(order_number: str, email: str, name: str, payment_items: list[dict]) -> dict:
     token, _, public_url = payment_configuration()
+    starts_at = datetime.now(timezone.utc)
+    expires_at = starts_at + timedelta(days=3)
     return mercado_pago_request("/checkout/preferences", token, {
         "items": payment_items,
         "payer": {"email": email, "name": name[:120]},
@@ -238,7 +250,23 @@ def create_payment_preference(order_number: str, email: str, name: str, payment_
         },
         "auto_return": "approved",
         "notification_url": f"{public_url}/api/payments/mercadopago/webhook",
+        "expires": True,
+        "expiration_date_from": starts_at.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "expiration_date_to": expires_at.isoformat(timespec="milliseconds").replace("+00:00", "Z"),
     })
+
+
+def expire_unpaid_orders(db: sqlite3.Connection) -> None:
+    expired = db.execute(
+        "SELECT id,number,data_json FROM orders WHERE payment_status IN ('pending','rejected','cancelled') AND status='Aguardando pagamento' AND inventory_reserved=1 AND datetime(created_at)<=datetime('now','-3 days')"
+    ).fetchall()
+    for order in expired:
+        for item in json.loads(order["data_json"])["items"]:
+            db.execute("UPDATE products SET stock=stock+? WHERE id=?", (item["qty"], item["id"]))
+        db.execute(
+            "UPDATE orders SET status='Cancelado',payment_status='expired',inventory_reserved=0,checkout_url='' WHERE id=?",
+            (order["id"],),
+        )
 
 
 def valid_mercado_pago_signature(signature: str, request_id: str, data_id: str, secret: str) -> bool:
@@ -329,6 +357,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             return
         try:
             with transaction() as db:
+                expire_unpaid_orders(db)
                 if parsed.path == "/api/health":
                     self.send_json(200, {"ok": True, "database": "sqlite"})
                 elif parsed.path == "/api/catalog":
@@ -339,7 +368,14 @@ class StoreHandler(BaseHTTPRequestHandler):
                         product["stock"] = row["stock"]
                         products.append(product)
                     catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-                    self.send_json(200, {"products": products, "categories": catalog["categories"], "faqs": catalog["faqs"]})
+                    pickup_enabled = os.environ.get("STORE_PICKUP_ENABLED", "0") == "1"
+                    pickup_address = os.environ.get("STORE_PICKUP_ADDRESS", "").strip()
+                    pickup = {
+                        "enabled": pickup_enabled and bool(pickup_address),
+                        "label": os.environ.get("STORE_PICKUP_LABEL", "Retirada no ateliê").strip(),
+                        "address": pickup_address,
+                    }
+                    self.send_json(200, {"products": products, "categories": catalog["categories"], "faqs": catalog["faqs"], "pickup": pickup})
                 elif parsed.path == "/api/me":
                     user = self.session_user(db)
                     self.send_json(200, {"user": {"name": user["name"], "email": user["email"], "role": user["role"]} if user else None})
@@ -367,7 +403,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                     row = db.execute("SELECT number,status,payment_status,checkout_url,created_at FROM orders WHERE number=?", (number,)).fetchone()
                     if not row:
                         raise ApiError(404, "Pedido não encontrado.")
-                    self.send_json(200, {"number": row["number"], "status": row["status"], "paymentStatus": row["payment_status"], "paymentStatusLabel": {"pending": "Aguardando confirmação", "approved": "Aprovado", "rejected": "Recusado", "cancelled": "Cancelado", "refunded": "Reembolsado", "charged_back": "Contestação"}.get(row["payment_status"], row["payment_status"]), "checkoutUrl": row["checkout_url"], "date": row["created_at"]})
+                    self.send_json(200, {"number": row["number"], "status": row["status"], "paymentStatus": row["payment_status"], "paymentStatusLabel": {"pending": "Aguardando confirmação", "approved": "Aprovado", "rejected": "Recusado", "cancelled": "Cancelado", "expired": "Expirado", "refunded": "Reembolsado", "charged_back": "Contestação"}.get(row["payment_status"], row["payment_status"]), "checkoutUrl": row["checkout_url"], "date": row["created_at"]})
                 elif parsed.path.startswith("/api/"):
                     raise ApiError(404, "Rota não encontrada.")
         except ApiError as exc:
@@ -398,6 +434,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                     return
             data = self.read_json()
             with transaction() as db:
+                expire_unpaid_orders(db)
                 parsed = urlparse(self.path)
                 if parsed.path == "/api/payments/mercadopago/webhook":
                     token, secret, _ = payment_configuration()
@@ -422,29 +459,26 @@ class StoreHandler(BaseHTTPRequestHandler):
                         self.send_json(200, {"ok": True})
                         return
                     gateway_status = str(payment_resource.get("status", "unknown"))[:40]
-                    if order["payment_status"] != "approved" or gateway_status == "approved":
-                        if gateway_status == "approved" and not order["inventory_reserved"]:
-                            enough_stock = order["status"] == "Cancelado"
-                            if not enough_stock:
-                                needed: dict[int, int] = {}
-                                for item in json.loads(order["data_json"])["items"]:
-                                    needed[item["id"]] = needed.get(item["id"], 0) + item["qty"]
-                                enough_stock = all(
-                                    (product := db.execute("SELECT stock FROM products WHERE id=?", (product_id,)).fetchone())
-                                    and product["stock"] >= quantity
-                                    for product_id, quantity in needed.items()
-                                )
-                                if enough_stock:
-                                    for product_id, quantity in needed.items():
-                                        db.execute("UPDATE products SET stock=stock-? WHERE id=?", (quantity, product_id))
-                            if enough_stock and order["status"] != "Cancelado":
-                                db.execute("UPDATE orders SET status='Pago',inventory_reserved=1,payment_status=?,payment_id=? WHERE id=?", (gateway_status, data_id, order["id"]))
-                            elif order["status"] == "Cancelado":
-                                db.execute("UPDATE orders SET status='Aguardando análise',payment_status=?,payment_id=? WHERE id=?", (gateway_status, data_id, order["id"]))
-                            else:
-                                db.execute("UPDATE orders SET status='Aguardando análise',payment_status=?,payment_id=? WHERE id=?", (gateway_status, data_id, order["id"]))
+                    if gateway_status == "approved":
+                        enough_stock = order["inventory_reserved"] == 1
+                        if not enough_stock and order["status"] != "Cancelado":
+                            needed: dict[int, int] = {}
+                            for item in json.loads(order["data_json"])["items"]:
+                                needed[item["id"]] = needed.get(item["id"], 0) + item["qty"]
+                            enough_stock = all(
+                                (product := db.execute("SELECT stock FROM products WHERE id=?", (product_id,)).fetchone())
+                                and product["stock"] >= quantity
+                                for product_id, quantity in needed.items()
+                            )
+                            if enough_stock:
+                                for product_id, quantity in needed.items():
+                                    db.execute("UPDATE products SET stock=stock-? WHERE id=?", (quantity, product_id))
+                        if enough_stock and order["status"] != "Cancelado":
+                            db.execute("UPDATE orders SET status=CASE WHEN status='Aguardando pagamento' THEN 'Pago' ELSE status END,inventory_reserved=1,payment_status='approved',payment_id=? WHERE id=?", (data_id, order["id"]))
                         else:
-                            db.execute("UPDATE orders SET payment_status=?,payment_id=? WHERE id=?", (gateway_status, data_id, order["id"]))
+                            db.execute("UPDATE orders SET status='Aguardando análise',payment_status='approved',payment_id=? WHERE id=?", (data_id, order["id"]))
+                    elif order["payment_status"] != "approved":
+                        db.execute("UPDATE orders SET payment_status=?,payment_id=? WHERE id=?", (gateway_status, data_id, order["id"]))
                     self.send_json(200, {"ok": True})
                 elif parsed.path == "/api/auth/register":
                     name, email, password = (str(data.get(k, "")).strip() for k in ("name", "email", "password"))
@@ -577,6 +611,8 @@ class StoreHandler(BaseHTTPRequestHandler):
                     customer = data.get("customer") or {}
                     if not isinstance(customer, dict):
                         raise ApiError(400, "Dados do cliente inválidos.")
+                    if customer.get("terms") is not True:
+                        raise ApiError(400, "Aceite as políticas da loja antes de concluir o pedido.")
                     email = user["email"] if user else str(customer.get("email", "")).strip().lower()
                     name = user["name"] if user else str(customer.get("name", "")).strip()
                     cep = re.sub(r"\D", "", str(customer.get("cep", "")))
@@ -626,10 +662,12 @@ class StoreHandler(BaseHTTPRequestHandler):
                     if not isinstance(shipping_mode, str):
                         raise ApiError(400, "Forma de entrega inválida.")
                     if shipping_mode == "retirada":
+                        if os.environ.get("STORE_PICKUP_ENABLED", "0") != "1" or not os.environ.get("STORE_PICKUP_ADDRESS", "").strip():
+                            raise ApiError(400, "Retirada no ateliê não está disponível. Escolha uma opção de entrega.")
                         shipping = 0
-                        shipping_name = "Retirada no ateliê"
+                        shipping_name = os.environ.get("STORE_PICKUP_LABEL", "Retirada no ateliê").strip()
                     else:
-                        if not re.fullmatch(r"\d{11}", re.sub(r"\D", "", str(customer.get("cpf", "")))):
+                        if not valid_cpf(customer.get("cpf")):
                             raise ApiError(400, "Informe o CPF do destinatário para concluir o frete.")
                         if (len(re.sub(r"\D", "", str(customer.get("phone", "")))) < 10
                                 or not customer.get("number") or not customer.get("neighborhood")
@@ -657,7 +695,11 @@ class StoreHandler(BaseHTTPRequestHandler):
                     checkout_url = preference.get("sandbox_init_point") if access_token.startswith("TEST-") else preference.get("init_point")
                     if not isinstance(checkout_url, str) or not checkout_url.startswith("https://"):
                         raise ApiError(502, "O provedor não retornou uma URL de pagamento válida.")
-                    db.execute("INSERT INTO orders(number,user_id,email,payment_method,payment_provider,payment_status,preference_id,checkout_url,subtotal_cents,discount_cents,shipping_cents,total_cents,data_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (number, user["id"] if user else None, email, payment, "mercadopago", "pending", str(preference.get("id", "")), checkout_url, subtotal, discount, shipping, total, json.dumps(order_data, ensure_ascii=False)))
+                    for product_id, quantity in requested_quantities.items():
+                        cursor = db.execute("UPDATE products SET stock=stock-? WHERE id=? AND stock>=?", (quantity, product_id, quantity))
+                        if cursor.rowcount != 1:
+                            raise ApiError(409, "O estoque mudou durante o checkout. Revise sua sacola e tente novamente.")
+                    db.execute("INSERT INTO orders(number,user_id,email,payment_method,payment_provider,payment_status,preference_id,checkout_url,subtotal_cents,discount_cents,shipping_cents,total_cents,inventory_reserved,data_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (number, user["id"] if user else None, email, payment, "mercadopago", "pending", str(preference.get("id", "")), checkout_url, subtotal, discount, shipping, total, 1, json.dumps(order_data, ensure_ascii=False)))
                     db.commit()
                     order = db.execute("SELECT * FROM orders WHERE number=?", (number,)).fetchone()
                     self.send_json(201, {"order": public_order(order), "checkoutUrl": checkout_url})
@@ -698,6 +740,7 @@ class StoreHandler(BaseHTTPRequestHandler):
         try:
             data = self.read_json()
             with transaction() as db:
+                expire_unpaid_orders(db)
                 self.require_user(db, admin=True)
                 if self.path.startswith("/api/admin/orders/"):
                     number = unquote(self.path.rsplit("/", 1)[-1])
@@ -770,7 +813,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 user = self.require_user(db)
                 if user["role"] == "admin":
                     raise ApiError(409, "Crie outro administrador antes de excluir esta conta administrativa.")
-                orders = db.execute("SELECT id,number,data_json,payment_status FROM orders WHERE user_id=?", (user["id"],)).fetchall()
+                orders = db.execute("SELECT id,number,data_json,payment_status,status,inventory_reserved FROM orders WHERE user_id=?", (user["id"],)).fetchall()
                 for order in orders:
                     data = json.loads(order["data_json"])
                     data["customer"] = {
@@ -778,9 +821,13 @@ class StoreHandler(BaseHTTPRequestHandler):
                         "street": "", "number": "", "complement": "", "neighborhood": "",
                         "city": "", "uf": "", "note": "",
                     }
+                    is_unpaid = order["status"] == "Aguardando pagamento" and order["payment_status"] in {"pending", "rejected", "cancelled"}
+                    if is_unpaid and order["inventory_reserved"]:
+                        for item in json.loads(order["data_json"])["items"]:
+                            db.execute("UPDATE products SET stock=stock+? WHERE id=?", (item["qty"], item["id"]))
                     db.execute(
-                        "UPDATE orders SET user_id=NULL,email=?,data_json=?,checkout_url='',status=CASE WHEN payment_status='pending' THEN 'Cancelado' ELSE status END WHERE id=?",
-                        (f"removido+{order['number']}@invalid.local", json.dumps(data, ensure_ascii=False), order["id"]),
+                        "UPDATE orders SET user_id=NULL,email=?,data_json=?,checkout_url='',status=CASE WHEN ? THEN 'Cancelado' ELSE status END,inventory_reserved=CASE WHEN ? THEN 0 ELSE inventory_reserved END WHERE id=?",
+                        (f"removido+{order['number']}@invalid.local", json.dumps(data, ensure_ascii=False), int(is_unpaid), int(is_unpaid), order["id"]),
                     )
                 db.execute("DELETE FROM contacts WHERE email=? COLLATE NOCASE", (user["email"],))
                 db.execute("DELETE FROM subscribers WHERE email=? COLLATE NOCASE", (user["email"],))

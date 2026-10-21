@@ -25,21 +25,22 @@ Para criar o primeiro administrador local:
 python3 -m server.manage create-admin admin@seudominio.com
 ```
 
-## Publicação com Docker e HTTPS
+## Publicação em VPS (Docker e HTTPS)
 
 O Compose monta a aplicação e o Caddy. O Caddy gerencia HTTPS automaticamente; a porta 8000 da aplicação não fica exposta à internet.
 
-1. Aponte o DNS do domínio para o servidor e libere as portas 80 e 443.
-2. Copie `.env.example` para `.env`. Defina `SITE_DOMAIN`, credenciais do Mercado Pago, token/CEP de origem e dados do Melhor Envio; proteja o arquivo (`chmod 600 .env`) e nunca o envie ao Git.
-3. No painel do Mercado Pago, configure o webhook de pagamentos para `https://SEU_DOMINIO/api/payments/mercadopago/webhook` e copie o segredo gerado para `MP_WEBHOOK_SECRET`.
-4. Inicie a publicação:
+1. Use um VPS com Docker, aponte o DNS do domínio para o IP público do servidor e libere TCP 80/443. O Caddy solicita e renova HTTPS automaticamente depois que o DNS estiver correto.
+2. Envie o repositório ao VPS e execute os comandos na pasta do projeto.
+3. Copie `.env.example` para `.env`, preencha o domínio e as credenciais reais, proteja o arquivo (`chmod 600 .env`) e nunca o envie ao Git. Mantenha `STORE_PICKUP_ENABLED=0`, a menos que a retirada esteja disponível e o endereço completo esteja definido.
+4. No Mercado Pago, configure o webhook para `https://SEU_DOMINIO/api/payments/mercadopago/webhook` e copie o segredo gerado para `MP_WEBHOOK_SECRET`.
+5. Inicie a publicação:
 
 ```bash
 docker compose up --build -d
 docker compose exec app python -m server.manage create-admin admin@seudominio.com
 ```
 
-Use primeiro credenciais de teste do Mercado Pago (`TEST-...`) e simule aprovação, recusa e pagamento pendente. Depois de validar o webhook e o fluxo, substitua pelas credenciais de produção da sua conta. O serviço aceita pagamentos somente quando há access token, segredo de webhook e URL pública HTTPS configurados.
+Use primeiro credenciais de teste do Mercado Pago (`TEST-...`) e simule aprovação, recusa e pagamento pendente. Depois de validar o webhook e o fluxo, substitua pelas credenciais de produção. O serviço só aceita pedidos quando há access token, segredo de webhook e URL pública HTTPS. A retirada só é oferecida quando explicitamente habilitada com endereço no servidor, e o backend exige o aceite das políticas.
 
 Checkout Pro usa a API oficial de preferências e redireciona o comprador para o Mercado Pago. O retorno do navegador não aprova o pedido: a aprovação só ocorre após o servidor verificar a assinatura do webhook, consultar o pagamento no Mercado Pago e conferir referência, moeda e valor total.
 
@@ -47,7 +48,7 @@ Documentação oficial: [criar preferência](https://www.mercadopago.com.br/deve
 
 ## Imagens e catálogo
 
-O catálogo inicial contém dados de exemplo. O selo “Imagem ilustrativa” aparece nos cards e na personalização quando a foto vem de endereço externo. Ainda são necessárias fotos reais/autorizadas para apresentar com precisão cada modelo e acabamento. Substitua preços, estoque, cores, descrição e prazo antes de vender.
+As 11 fotos recebidas foram associadas aos respectivos produtos, convertidas para WebP e incluídas localmente no projeto. A loja confirmou autorização comercial para o uso das imagens. Os preços, estoque, cores, descrições, medidas aceitas, embalagens e prazos do catálogo ainda precisam ser conferidos com os dados reais da loja.
 
 Para importar fotos próprias ou autorizadas, instale o utilitário opcional:
 

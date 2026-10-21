@@ -15,9 +15,17 @@ const readArray = (key, validate) => {
 };
 
 const validId = (value) => Number.isSafeInteger(value) && value > 0;
+const validCpf = (value) => {
+  const cpf = String(value || '').replace(/\D/g, '');
+  if (cpf.length !== 11 || /^([\d])\1{10}$/.test(cpf)) return false;
+  const digits = [...cpf].map(Number);
+  const first = (digits.slice(0, 9).reduce((sum, digit, index) => sum + digit * (10 - index), 0) * 10) % 11 % 10;
+  const second = (digits.slice(0, 10).reduce((sum, digit, index) => sum + digit * (11 - index), 0) * 10) % 11 % 10;
+  return digits[9] === first && digits[10] === second;
+};
 
 const store = reactive({
-    categories:[], products:[], faqs:[],
+    categories:[], products:[], faqs:[], pickupConfig:{enabled:false,label:'',address:''}, catalogStatus:'loading',
 
     view:'home', category:'', favoritesOnly:false, query:'', sort:'featured', filterLight:'',
     favorites:[], cart:[], compare:[], recent:[], orders:[], contacts:[], subscribers:[], product:null,
@@ -51,7 +59,7 @@ const store = reactive({
     get grandTotal(){return Math.max(0,this.subtotal-this.discount+this.shippingPrice)},
     get shippingOptions(){
       return [
-        {id:'retirada',name:'Retirada no ateliê',eta:'Combine o horário após a compra',price:0},
+        ...(this.pickupConfig.enabled?[{id:'retirada',name:this.pickupConfig.label,eta:this.pickupConfig.address,price:0}]:[]),
         ...this.shippingQuotes.map(quote=>({
           id:quote.id,name:`${quote.company} · ${quote.name}`,
           eta:quote.deliveryDays?`${quote.deliveryDays} dias úteis após fabricação`:'Prazo informado pela transportadora',
@@ -82,11 +90,30 @@ const store = reactive({
       this.compare=readArray('ac_compare', validId).slice(0, 3);
       this.recent=readArray('ac_recent', validId).slice(0, 6);
 
+      let catalog;
       try {
-        const [catalog, session] = await Promise.all([this.api('/api/catalog'), this.api('/api/me')]);
-        this.categories=catalog.categories;
+        catalog=await this.api('/api/catalog');
+        if(!Array.isArray(catalog.products)||!catalog.products.length) throw new Error('O servidor retornou um catálogo vazio.');
+        this.catalogStatus='ready';
+      } catch(apiError) {
+        try {
+          const response=await fetch(new URL('assets/data/catalog.json',window.location.href));
+          if(!response.ok) throw new Error('Catálogo local indisponível.');
+          catalog=await response.json();
+          if(!Array.isArray(catalog.products)||!catalog.products.length) throw new Error('O catálogo local está vazio.');
+          this.catalogStatus='fallback';
+          this.notify('Catálogo em modo de consulta: não foi possível conectar ao servidor da loja.');
+        } catch(error) {
+          this.catalogStatus='error';
+          this.notify(error.message || apiError.message || 'Não foi possível carregar os produtos.');
+        }
+      }
+
+      if(catalog) {
+        this.categories=Array.isArray(catalog.categories)?catalog.categories:[];
         this.products=catalog.products;
-        this.faqs=catalog.faqs;
+        this.faqs=Array.isArray(catalog.faqs)?catalog.faqs:[];
+        this.pickupConfig=catalog.pickup?.enabled?catalog.pickup:{enabled:false,label:'',address:''};
         const productsById = new Map(this.products.map(product => [product.id, product]));
         this.favorites=this.favorites.filter(id => productsById.has(id));
         this.compare=this.compare.filter(id => productsById.has(id));
@@ -101,11 +128,17 @@ const store = reactive({
             price: Math.round(product.price * 100 * area) / 100,
           };
         });
+      }
+
+      try {
+        const session=await this.api('/api/me');
         this.user=session.user;
         this.adminOk=this.user?.role==='admin';
         if(this.user) await this.loadOrders();
       } catch(error) {
-        this.notify(error.message || 'Não foi possível conectar à loja');
+        this.user=null;
+        this.adminOk=false;
+        if(this.catalogStatus==='ready') this.notify(error.message || 'Catálogo disponível, mas o servidor da loja não respondeu.');
       }
 
       this.readHash();
@@ -166,6 +199,12 @@ const store = reactive({
     closeOverlays(){this.product=null;this.cartOpen=false;this.searchOpen=false;this.mobileOpen=false},
     openSearch(){this.searchOpen=true;setTimeout(()=>document.querySelector('[data-search-input]')?.focus(),0)},
     byId(id){return this.products.find(p=>p.id===id)},
+    fallbackImage(event){
+      const image=event?.target;
+      if(!image||image.dataset.fallback) return;
+      image.dataset.fallback='true';
+      image.src='/assets/images/product-placeholder.svg';
+    },
     money(n){return Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})},
     notify(msg){this.toast=msg;clearTimeout(this._t);this._t=setTimeout(()=>this.toast='',2400)},
     setCategory(id){this.category=id;this.favoritesOnly=false;document.getElementById('loja')?.scrollIntoView({behavior:'smooth'})},
@@ -211,7 +250,8 @@ const store = reactive({
       if(s===1 && (!this.customer.name||!this.customer.email)){this.notify('Preencha nome e e-mail');return}
       if(s===2){
         if(!this.customer.cep||!this.customer.street||!this.customer.city){this.notify('Complete o endereço');return}
-        await this.calculateShipping();
+        const available=await this.calculateShipping();
+        if(!available)return;
         this.step=3;return;
       }
       this.step=s+1;
@@ -224,10 +264,19 @@ const store = reactive({
           cep:this.customer.cep,items:this.cart,
         })});
         this.shippingQuotes=result.quotes||[];
-        this.shipping=this.shippingQuotes[0]?.id||'retirada';
-        if(!this.shippingQuotes.length)this.shippingQuoteError='Não há opções de entrega para este CEP. Você pode retirar no ateliê.';
+        this.shipping=this.shippingQuotes[0]?.id||(this.pickupConfig.enabled?'retirada':'');
+        if(!this.shippingQuotes.length&&!this.pickupConfig.enabled){
+          this.shippingQuoteError='Não há opções de entrega para este CEP.';
+          this.notify(this.shippingQuoteError);
+          return false;
+        }
+        if(!this.shippingQuotes.length)this.shippingQuoteError='Não há transportadoras para este CEP. A retirada configurada está disponível.';
+        return true;
       }catch(error){
-        this.shipping='retirada';this.shippingQuoteError=error.message;
+        this.shipping=this.pickupConfig.enabled?'retirada':'';
+        this.shippingQuoteError=this.pickupConfig.enabled?`${error.message} Você pode escolher a retirada configurada.`:error.message;
+        if(!this.pickupConfig.enabled)this.notify(error.message);
+        return this.pickupConfig.enabled;
       }finally{this.quotingShipping=false}
     },
 
@@ -266,7 +315,7 @@ const store = reactive({
       if(!this.customer.terms){this.notify('Aceite as políticas para continuar');return}
       if(!this.cart.length){this.notify('Sacola vazia');return}
       if(!this.customer.name||!this.customer.email||!this.customer.cep||!this.customer.street||!this.customer.city){this.notify('Complete seus dados e endereço');this.step=1;return}
-      if(this.shipping!=='retirada'&&this.customer.cpf.replace(/\D/g,'').length!==11){this.notify('Informe um CPF válido para a entrega');this.step=1;return}
+      if(this.shipping!=='retirada'&&!validCpf(this.customer.cpf)){this.notify('Informe um CPF válido para a entrega');this.step=1;return}
       this.submitOrder();
     },
 
