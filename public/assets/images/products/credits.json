@@ -1,12 +1,12 @@
 {
-  "note": "Fotos recebidas da loja. Confirme que há autorização de uso comercial para todos os arquivos antes de publicar.",
+  "note": "A loja confirmou autorização de uso comercial para estas imagens.",
   "images": [
     {
       "file": "product-01-main.webp",
       "productId": 1,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Horizontal de Alumínio"
     },
     {
@@ -14,7 +14,7 @@
       "productId": 2,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Horizontal de Madeira Sintética"
     },
     {
@@ -22,7 +22,7 @@
       "productId": 3,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Vertical de Tecido"
     },
     {
@@ -30,7 +30,7 @@
       "productId": 4,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Double Vision"
     },
     {
@@ -38,7 +38,7 @@
       "productId": 5,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Painel Europeu"
     },
     {
@@ -46,7 +46,7 @@
       "productId": 6,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Rolô Blackout"
     },
     {
@@ -54,7 +54,7 @@
       "productId": 7,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Rolô Tela Solar"
     },
     {
@@ -62,7 +62,7 @@
       "productId": 8,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Rolô Translúcida"
     },
     {
@@ -70,7 +70,7 @@
       "productId": 9,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Romana Blackout"
     },
     {
@@ -78,7 +78,7 @@
       "productId": 10,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana Romana Translúcida"
     },
     {
@@ -86,7 +86,7 @@
       "productId": 11,
       "author": "Fornecido pela loja",
       "source": "Imagem enviada pelo usuário",
-      "license": "Confirmar autorização comercial antes da publicação",
+      "license": "Autorização comercial confirmada pela loja",
       "description": "Persiana de Teto"
     }
   ]

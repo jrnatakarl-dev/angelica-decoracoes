@@ -48,7 +48,7 @@ Documentação oficial: [criar preferência](https://www.mercadopago.com.br/deve
 
 ## Imagens e catálogo
 
-As 11 fotos recebidas foram associadas aos respectivos produtos, convertidas para WebP e incluídas localmente no projeto. Confirme a autorização comercial de cada imagem antes de publicar. Os preços, estoque, cores, descrições, medidas aceitas, embalagens e prazos do catálogo ainda precisam ser conferidos com os dados reais da loja.
+As 11 fotos recebidas foram associadas aos respectivos produtos, convertidas para WebP e incluídas localmente no projeto. A loja confirmou autorização comercial para o uso das imagens. Os preços, estoque, cores, descrições, medidas aceitas, embalagens e prazos do catálogo ainda precisam ser conferidos com os dados reais da loja.
 
 Para importar fotos próprias ou autorizadas, instale o utilitário opcional:
 
