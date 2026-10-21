@@ -48,7 +48,7 @@ Documentação oficial: [criar preferência](https://www.mercadopago.com.br/deve
 
 ## Imagens e catálogo
 
-O catálogo inicial contém dados de exemplo. O selo “Imagem ilustrativa” aparece nos cards e na personalização quando a foto vem de endereço externo. Ainda são necessárias fotos reais/autorizadas para apresentar com precisão cada modelo e acabamento. Substitua preços, estoque, cores, descrição e prazo antes de vender.
+As 11 fotos recebidas foram associadas aos respectivos produtos, convertidas para WebP e incluídas localmente no projeto. Confirme a autorização comercial de cada imagem antes de publicar. Os preços, estoque, cores, descrições, medidas aceitas, embalagens e prazos do catálogo ainda precisam ser conferidos com os dados reais da loja.
 
 Para importar fotos próprias ou autorizadas, instale o utilitário opcional:
 
